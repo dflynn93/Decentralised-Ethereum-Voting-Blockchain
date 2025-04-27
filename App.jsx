@@ -29,6 +29,16 @@ function App() {
     setHasVoted(true);
     };
 
+    const downloadResults = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(voteData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "voting_results.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    };
+
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Simple Voting</h1>
@@ -50,8 +60,8 @@ function App() {
 
                     {(() => {
                         const max = Math.max(...voteData.map(c => c.votes));
-                        const Winners = voteData.filter(c => c.votes === max);
-                        return Winners.length === 1 ? (
+                        const winners = voteData.filter(c => c.votes === max);
+                        return winners.length === 1 ? (
                             <p>Winner: {winners[0].name}</p>
                         ) : (
                             <div>
@@ -66,7 +76,6 @@ function App() {
                     })()}
                     </div>
             )}
-
 
             {!isLoggedIn ? (
                 <div>
@@ -112,7 +121,7 @@ function App() {
                             <li key={c.id}>
                                 {c.name} - {c.votes} votes
                                 <button onClick={() => castVote(c.id)}
-                                style={{ marginLeft: '1rem '}}
+                                style={{ marginLeft: '1rem' }}
                                 disabled={hasVoted}
                                 > Vote
                                 </button>
@@ -120,6 +129,9 @@ function App() {
                             </li>
                         ))}
                     </ul>
+                    <button onClick={downloadResults} style={{ marginTop: '1rem' }}>
+                        Download Results
+                    </button>
                  </div>       
             )}
         </div>
