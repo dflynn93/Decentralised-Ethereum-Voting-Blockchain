@@ -32,6 +32,23 @@ function App() {
     const [newCandidateName, setNewCandidateName] = useState('');
     const [newCandidateParty, setNewCandidateParty] = useState('');
 
+    const [walletAddress, setWalletAddress] = useState('');
+
+    const connectWallet = async () => {
+        if (window.ethereum) {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                setWalletAddress(accounts[0]);
+                alert('Wallet connected!');
+            } catch (error) {
+                alert('Connection failed. ');
+                console.error(error);
+            }
+        } else {
+            alert('MetaMask not detected.');
+        }
+    };
+
     const castVote = (id) => {
         const updated = voteData.map((c) =>
         c.id === id ? { ...c, votes: c.votes + 1 } : c
@@ -98,9 +115,18 @@ function App() {
         alert(`Candidate ${newCandidateName} added!`);
     };
 
+    
+
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Simple Voting</h1>
+
+            {!walletAddress ? (
+                <button onClick={connectWallet}>Connect Wallet</button>
+            ) : (
+                <p>Connected WalletL {walletAddress}</p>
+            )}
+
             <button onClick={resetElection} style={{ marginLeft: '1rem', backgroundColor: 'red' }}>
                 Reset Election
             </button>
@@ -113,6 +139,7 @@ function App() {
             <button onClick={() => setShowResults(!showResults)}>
                 {showResults ? 'Hide Results' : 'View Results'}
             </button>
+            
             {showResults && (
                 <div style={{ marginTop: '2rem' }}>
                     <h3>Live Results</h3>
@@ -191,7 +218,7 @@ function App() {
                                 {c.name} - {c.votes} votes
                                 <button onClick={() => castVote(c.id)}
                                 style={{ marginLeft: '1rem' }}
-                                disabled={hasVoted}
+                                disabled={hasVoted || !walletAddress}
                                 > Vote
                                 </button>
 
