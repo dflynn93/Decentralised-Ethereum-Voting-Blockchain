@@ -1,0 +1,56 @@
+import React from "react";
+
+function AdminPanel({ candidates, votingClosed, onToggleVoting }) {
+    // Calculate total votes and determine winners
+    const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0)
+    const maxVotes = Math.max(...candidates.map(c => c.votes));
+    const winners = candidates.filter(c => c.votes === maxVotes);
+
+    return(
+        <div style={{ marginTop: "2rem" }}>
+            <h2>Admin Panel</h2>
+
+            <h3>Live Results</h3>
+            <ul>
+                {candidates.map((c) => (
+                    <li key={c.id}>
+                        {c.name} - {c.votes} votes
+                        {totalVotes > 0 && (
+                            <>({((c.votes / totalVotes) * 100).toFixed(1)}%)</>
+                        )}
+                    </li>
+                ))}
+            </ul>
+
+            <hr />
+
+             {totalVotes > 0 &&(
+                <div>
+                    {winners.length === 1 ? (
+                            <h4>Winner: {winners[0].name}</h4>
+                        ) : (
+                          <>
+                             <h4> It's a tie between:</h4>
+                            <ul>
+                                {winners.map((w) => (
+                                    <li key={w.id}>{w.name}</li>
+                                ))}
+                            </ul>
+                            </>
+                        )}
+                      </div>
+                    )}
+            <button onClick={onToggleVoting}>
+                {votingClosed ? "Open Voting" : "Close Voting"}
+            </button>
+            {votingClosed && (
+                <p style={{ color: "red", marginTop: "1rem" }}>
+                    Voting is closed. No more votes can be cast.
+                </p>
+            )}
+        </div>
+    );
+}
+
+export default AdminPanel;
+
