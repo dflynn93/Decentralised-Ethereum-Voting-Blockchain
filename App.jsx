@@ -1,13 +1,11 @@
 // App/jsx
 import React, { useState, useEffect } from "react";
-import { getContract, getCandidates, voteForCandidate, hasUserVoted } from "./VotingContract";
+import { getContract, getCandidates, voteForCandidate, hasUserVoted } from "./VotingContract.js";
 import { ethers } from "ethers";
 
 import AdminPanel from "./AdminPanel";
 import ObserverPanel from "./ObserverPanel";
 import VoterPanel from "./VoterPanel";
-import VotingContract from "./VotingContract.js";
-
 
 function App() {
     const [walletAddress, setWalletAddress] = useState('');
@@ -17,9 +15,13 @@ function App() {
     const [hasVoted, setHasVoted] = React.useState(false);
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('');
+    const [votingClosed, setVotingClosed] = useState(
+        localStorage.getItem("votingClosed") === "true"
+    );
 
-    const connectWallet = async () => {
-        if (window.ethereum) {
+    useEffect(() => {
+        const init = async () => {
+             if (window.ethereum) {
             try {
                 await window.ethereum.request({ method: "eth_requestAccounts" });
                 const ethersProvider = new ethers.BrowserProvider(window.ethereum);
@@ -41,12 +43,17 @@ function App() {
                 setLoading(false);
             } catch (error) {
                 console.error(error);
-                alert("Wallet connection failed.");
+                alert("Wallet connection failed:", error);
+                setLoading(false);
             }
         } else {
             alert("MetaMask not detected.");
+            setLoading(false);
         }
     };
+
+     init();
+    }, []);
 
     const handleVote = async (id) => {
         try {
@@ -60,10 +67,6 @@ function App() {
         }
     };
 
-    const [votingClosed, setVotingClosed] = useState(
-        localStorage.getItem("votingClosed") === "true"
-    );
-
     const onToggleVoting = () => {
         const newState = !votingClosed;
         setVotingClosed(newState);
@@ -73,12 +76,7 @@ function App() {
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Simple Voting (On-Chain)</h1>
-
-            {!walletAddress ? (
-                <button onClick={connectWallet}>Connect Wallet</button>
-            ) : (
-                <p>Connected Wallet: {walletAddress}</p>
-            )}
+            <p>Connected Wallet: {walletAddress}</p>
 
             {walletAddress && (
                 <div style={{ marginBottom: '1rem' }}>
@@ -116,8 +114,11 @@ function App() {
                 onVote={handleVote}
                 votingClosed={votingClosed}
                 />
-            )}                             
+            )}
+                          
         </div>
     );
 }
+
+export default App;
 export default App;
