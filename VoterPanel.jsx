@@ -38,3 +38,4 @@ function VoterPanel({ candidates, hasVoted, onVote, votingClosed}) {
         export default VoterPanel;
 
                                 
+                    
