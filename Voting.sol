@@ -9,15 +9,24 @@ contract Voting {
         uint voteCount;
     }   
 
-
-mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Candidate
+      mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Candidate
     uint public candidatesCount; // Total number of candidates
 
     mapping(address => bool) public hasVoted; // Track if an address has voted
 
+    address public admin; // Admin address
+    constructor() {
+        admin = msg.sender; // Set the contract deployer as the admin
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can perform this action.");
+        _;
+    }
+
     // Add constructor to populate candidates (Admin function) ---
 
-    function addCandidate(string memory _name) private {
+    function addCandidate(string memory _name) public onlyAdmin {
         candidates[candidatesCount] = Candidate(_name, 0);
         candidatesCount++;
     }
@@ -44,3 +53,4 @@ mapping(uint => Candidate) public candidates; // Mapping of candidate ID to Cand
         return (candidate.name, candidate.voteCount);
     }
 }   
+
