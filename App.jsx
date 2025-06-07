@@ -44,6 +44,7 @@ function App() {
             } catch (error) {
                 console.error(error);
                 alert("Wallet connection failed:", error);
+                console.error(error);
                 setLoading(false);
             }
         } else {
@@ -72,6 +73,20 @@ function App() {
         setVotingClosed(newState);
         localStorage.setItem("votingClosed", newState.toString());
     };
+
+    const connectWallet = async () => {
+        if (window.ethereum) {
+            try {
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                setWalletAddress(accounts[0]);
+            } catch (err) {
+                alert("Wallet connection failed:");
+                console.error("Connection error:", err);
+        }
+    } else {
+            alert("MetaMask not detected. Please install it to use this app.");
+        }
+    }
 
     return (
         <div style={{ padding: '2rem' }}>
@@ -121,4 +136,4 @@ function App() {
 }
 
 export default App;
-export default App;
+
