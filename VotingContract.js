@@ -1,63 +1,105 @@
-import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.6.2/+esm";
-import abi from './ABI.json' assert { type: "json" };
+import { ethers } from "ethers";
+import abi from './ABI.json';
 
-const contractAddress = "0x02c24b509140dece8b51e2c5b28b655b48d4fb71"; // as of 2nd June
+const contractAddress = "0xA318Db8B05cfBB2BEf0944Ef3f9D1Fdb90DF81Bf"; // as of 7th June
 const contractABI = abi;
 
-export const connectWallet = async () => {
-    if (!window.ethereum) throw new Error("MetaMask not detected. Please install it.");
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    const signer = await provider.getSigner();
-    const address = await signer.getAddress();
-    return { provider, signer, address };
-};
-
-export async function getContract(providerOrSigner) {
-    try {
-        const contract = new ethers.Contract(contractAddress, contractABI, providerOrSigner)
-        //if (!window.ethereum) throw new Error("MetaMask not detected.");
-
-        const network = await providerOrSigner.provider?.getNetwork?.();
-        if (network) {
-        console.log("Connected to network:", network.name, "with chain ID:", network.chainId);}
-        console.log("Loaded ABI entries:", contractABI.map(f => f.name));
-        console.log("ABI function names:", contractABI.filter(f => f.type === "function").map(f => f.name));
-        console.log("Contract prototype functions (v6):", Object.getOwnPropertyNames(Object.getPrototypeOf(contract)).filter(name => typeof contract[name] === 'function'));
-        
-        return contract;
-        }  catch (error) {
-        console.error("Error getting contract:", error);
-        return null;
+//Provider (InJected by MetaMask)
+const getProvider = () => {
+    if (!window.ethereum) {
+        throw new Error("MetaMask is not installed or not detected.");
     }
+    return new ethers.BrowserProvider(window.ethereum);
 };
 
-export const getCandidates = async (contract) => {
+// Optional signer (used for write methods)
+const getSigner = async () => {
+    const provider = getProvider();
+    const signer = await provider.getSigner();
+    return signer;
+};
+
+// Get contract instance with signer for write access
+const getContract = async () => {
+    const signer = await getSigner();
+    return new ethers.Contract(contractAddress, contractABI, signer);
+};
+
+const getContractReadOnly = async () => {
+    const provider = getProvider();
+    return new ethers.Contract(contractAddress, contractABI, provider);
+}
+
+// Get list of candidates (by ID)
+export const getCandidates = async () => {
+    const contract = await getContractReadOnly();
     const count = await contract.candidatesCount();
     const candidates = [];
+
     for (let i = 0; i < count; i++) {
         const candidate = await contract.candidates(i);
-        candidates.push({ id: i, name: candidate[0], votes: Number(candidate[1]) });
+        candidates.push({ 
+            id: i, 
+            name: candidate.name, 
+            party: candidate.party, 
+            votes: Number(candidate.voteCount) 
+        });
     }
     return candidates;
 };
 
-export const hasUserVoted = async (contract, address) => {
-    if (!contract || !address) throw new Error("Contract and address required");
-       
-        console.log("Calling hasVoted with address:", address);
-        const result = await contract.hasVoted(address);
-        console.log("hasVoted result:", result);
-        return result;
-    };
-
-
-export const voteForCandidate = async (contract, candidateId) => {
-    if (!contract || candidateId === undefined) {
-        throw new Error("Invalid contract or candidate ID");
-    }
-    const tx = await contract.vote(candidateId);
+// Submit a ranked vote
+export const submitRanking = async (candidateIdsInRankOrder) => {
+    // rankingMap: { 0: 2, 3: 2, 1: 3 } // candidateId: rank
+    const contract = await getContract();
+    const ranks = candidateIdsInRankOrder.map((_, i) => i + 1); // Convert to 1-based ranks
+    const tx = await contract.submitRanking(candidateIdsInRankOrder, ranks);
     await tx.wait();
+    return tx;
 };
 
+// Check if a voter has already voted
+export const hasUserVoted = async (address) => {
+    try {
+        return false;
+    //const contract = await getContractReadOnly();
+    //return await contract.hasVoted(address);
+    }
+    catch (error) {
+        console.error("Error checking vote status:", error);
+        return false;
+    }
+};
 
+export const addCandidate = async (name, party) => {
+    const contract = await getContract();
+    const tx = await contract.addCandidate(name, party);
+    await tx.wait();
+    return tx;
+};
+
+/*export async function getAllCandidates() {
+    const contract = await getContractReadOnly();
+    const count = await contract.candidateCount();
+    const list = [];
+    for (let i = 0; i < count; i++) {
+        const [name, party, voteCount] = await contract.candidates(i);
+        list.push({ id: i, name, party, votes: voteCount.toNumber() });
+    }
+
+    return list;
+
+}; */
+
+/*export async function voteForCandidate(candidateId) {
+    const contract = await getContract();
+    const tx = await contract.vote(candidateId);
+    await tx.wait();
+    return tx;
+} */
+
+export {
+    getSigner,
+    getContract,
+    getContractReadOnly,
+};
