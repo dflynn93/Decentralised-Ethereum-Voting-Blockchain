@@ -5,7 +5,7 @@ const observerAccounts = {
     202: 'obs2'
 };
 
-function ObserverPanel({ candidates }) {
+function ObserverPanel({ candidates, votingClosed, votingHistory }) {
     const [observerId, setObserverId] = useState('');
     const [observerPin, setObserverPin] = useState('');                 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,10 +21,10 @@ function ObserverPanel({ candidates }) {
              <label>
                  Observer ID:
                     <input 
-                                    type="text"
-                                    value={observerId}
-                                    onChange={(e) => setObserverId(e.target.value)}
-                                />
+                        type="text"
+                        value={observerId}
+                        onChange={(e) => setObserverId(e.target.value)}
+                     />
                                 </label>
                                 <br />
                                 <label>
@@ -51,6 +51,41 @@ function ObserverPanel({ candidates }) {
                                 </>
          ) : (
             <div>
+                {/* Voting Status */}
+                <div style={{
+                    marginBottom: '2rem',
+                    padding: '1rem',
+                    border: '1px solid #ccc',
+                    backgroundColor: votingClosed ? '#ffebee' : '#e8f5e9',
+                    borderRadius: '4px'
+                }}>
+                    <h3 style={{ margin: "0 0 0.5rem 0"}}>Election Status</h3>
+                    <p style={{ margin: "0", color: votingClosed ? 'red' : 'green'}}>
+                        <strong>{votingClosed ? "Voting is closed." : "Voting is open."}</strong>
+                    </p>
+                </div>
+
+                {/* Voting History */}
+                {votingHistory && votingHistory.length > 0 && (
+                    <div style={{ marginBottom: '2rem' }}>
+                        <h3>Voting Activity</h3>
+                        <div style={{
+                            maxHeight: '150px',
+                            overflowY: 'auto',
+                            border: '1px solid #ccc',
+                            padding: '0.5rem',
+                            backgroundColor: '#fafafa',
+                        }}>
+                            {votingHistory.slice(-5).reverse().map((entry, index) => (
+                                <div key={index} style={{ marginBottom: '0.5rem', fontSize: '0.9rem'}}>
+                                    <strong>{entry.timestamp}</strong> Voting {enter.action} by {entry.admin.slice(0, 6)}...{entry.admin.slice(-4)}:
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+
                   <h2>Live Results</h2>
                             <ul>
                                 {candidates.map((c) => (
@@ -69,7 +104,6 @@ function ObserverPanel({ candidates }) {
 }
 
 export default ObserverPanel;
-
        
 
 
