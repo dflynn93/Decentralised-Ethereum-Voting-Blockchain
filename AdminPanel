@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { addCandidate } from "./VotingContract.js";
+import DigitalBallot from "./DigitalBallot";
 
 function AdminPanel({ candidates, votingClosed, onToggleVoting, onCandidateAdded, votingHistory = [] }) {
     const [candidateName, setCandidateName] = useState("");
     const [candidateParty, setCandidateParty] = useState("");
     const [isAddingCandidate, setIsAddingCandidate] = useState(false);
+    const [showBallotPreview, setShowBallotPreview] = useState(false);
     
     const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
     const maxVotes = candidates.length > 0 ? Math.max(...candidates.map(c => c.votes)) : 0;
@@ -89,51 +91,6 @@ function AdminPanel({ candidates, votingClosed, onToggleVoting, onCandidateAdded
 
             <hr />
 
-            <h3>Testing Controls</h3>
-            <div style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #orange", backgroundColor: "#fff3cd" }}>
-                <p style={{ marginBottom: "0.5rem" }}>
-                    <strong> Testing Only:</strong> These controls are for development testing.
-                </p>
-                <button
-                    onClick={() => {
-                        if (window.confirm("Reset your vote status for testing? This only affects the UI, not the blockchain.")) {
-                            window.location.reload();
-                        }
-                    }}
-                    style={{
-                        padding: "0.5rem 1rem", 
-                        backgroundColor: "#ffc107", 
-                        color: "#212529",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        marginRight: "1rem"
-                    }}
-                >
-                    Reset UI (Reload Page)
-                </button>
-                <button
-                    onClick={() => {
-                        if (window.confirm("Clear all local data and reload the page? This will reset your voting status.")) {
-                        localStorage.clear();
-                        window.location.reload();
-                        }                
-                    }}
-                    style={{
-                        padding: "0.5rem 1rem", 
-                        backgroundColor: "#dc3545", 
-                        color: "#white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer"
-                    }}
-                >
-                    Clear All Data & Reload
-                </button>
-            </div>
-
-            <hr />
-
             <h3>Voting Status Control</h3>
             <div style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #ccc", backgroundColor: votingClosed ? "#ffebee" : "#e8f5e9" }}>
                 <p><strong>Current Status:</strong> <span style={{ color: votingClosed ? "red" : "green" }}>
@@ -156,6 +113,49 @@ function AdminPanel({ candidates, votingClosed, onToggleVoting, onCandidateAdded
                 </button>
             </div>
 
+            <h3>Testing Controls</h3>
+            <div style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #orange", backgroundColor: "#fff3cd" }}>
+                <p style={{ marginBottom: "0.5rem" }}>
+                    <strong>⚠️ Testing Only:</strong> These controls are for development testing.
+                </p>
+                <button
+                    onClick={() => {
+                        if (window.confirm("Reset your vote status for testing? This only affects the UI, not the blockchain.")) {
+                            window.location.reload();
+                        }
+                    }}
+                    style={{
+                        padding: "0.5rem 1rem", 
+                        backgroundColor: "#ffc107", 
+                        color: "#212529",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        marginRight: "1rem"
+                    }}
+                >
+                    Reset UI (Reload Page)
+                </button>
+                <button
+                    onClick={() => {
+                        if (window.confirm("Clear all local data and reload? This will reset voting history.")) {
+                            localStorage.clear();
+                            window.location.reload();
+                        }
+                    }}
+                    style={{
+                        padding: "0.5rem 1rem", 
+                        backgroundColor: "#dc3545", 
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                    }}
+                >
+                    Clear All Data & Reload
+                </button>
+            </div>
+
             {votingHistory && votingHistory.length > 0 && (
                 <div style={{ marginTop: "2rem" }}>
                     <h4>Voting Activity Log</h4>
@@ -169,35 +169,54 @@ function AdminPanel({ candidates, votingClosed, onToggleVoting, onCandidateAdded
                 </div>
             )}
 
-            <hr />
-
             {totalVotes > 0 && candidates.length > 0 && (
-                <div>
+                <div style={{ marginTop: "2rem" }}>
                     {winners.length === 1 ? (
-                        <h4>Winner: {winners[0].name}</h4>
-                    ) : (
+                        <h4>🏆 Winner: {winners[0].name} ({winners[0].party})</h4>
+                    ) : winners.length > 1 ? (
                         <>
-                            <h4>It's a tie between:</h4>
+                            <h4>🤝 It's a tie between:</h4>
                             <ul>
                                 {winners.map((w) => (
-                                    <li key={w.id}>{w.name}</li>
+                                    <li key={w.id}>{w.name} ({w.party})</li>
                                 ))}
                             </ul>
                         </>
-                    )}
+                    ) : null}
                 </div>
             )}
 
-             <button onClick={onToggleVoting} style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}>
-                {votingClosed ? "Open Voting" : "Close Voting"}
-            </button>
-            {votingClosed && (
-                <p style={{ color: "red", marginTop: "1rem" }}>
-                    Voting is closed. No more votes can be cast.
+            <hr />
+
+            <h3>Ballot Testing</h3>
+            <div style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
+                <button
+                    onClick={() => setShowBallotPreview(!showBallotPreview)}
+                    style={{
+                        padding: "0.5rem 1rem",
+                        backgroundColor: "#17a2b8",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer"
+                    }}
+                >
+                    {showBallotPreview ? "Hide Ballot Preview" : "Show Ballot Preview"}
+                </button>
+                <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.9rem", color: "#666" }}>
+                    Preview how the ballot will appear to voters
                 </p>
-            )} 
+            </div>
+
+            {showBallotPreview && (
+                <DigitalBallot 
+                    candidates={candidates}
+                    onVote={() => {}} // No-op function for admin preview
+                    hasVoted={false}
+                    votingClosed={false}
+                    isPreviewMode={true}
+                />
+            )}
         </div>
     );
 }
-
-export default AdminPanel;
