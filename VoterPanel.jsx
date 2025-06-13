@@ -1,4 +1,5 @@
 import React, { useState} from "react";
+import DigitalBallot from "./DigitalBallot";
 
 const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingClosed }) => {
     const [rankings, setRankings] = useState({});
@@ -46,6 +47,17 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                                 The voting period is closed. No votes can be submitted at this time.
                         </p>
                     </div>
+
+                    <DigitalBallot
+                        candidates={candidates}
+                        rankings={rankings}
+                        onRankingChange={() => {}} // Disabled for closed voting
+                        onSubmit={() => {}}
+                        hasVoted={hasVoted}
+                        votingClosed={true}
+                        isPreviewMode={false}
+                        isRankingSystem={true}
+                    />
                 </div>
                 );
             }
@@ -64,46 +76,70 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                             You have already voted. Thank you for your participation!
                         </p>
                     </div>
-                    </div>
-                );
-            }
+
+                    <DigitalBallot
+                        candidates={candidates}
+                        rankings={rankings}
+                        onRankingChange={() => {}} // Disabled for closed voting
+                        onSubmit={() => {}}
+                        hasVoted={true}
+                        votingClosed={votingClosed}
+                        isPreviewMode={false}
+                        isRankingSystem={true}
+                    />
+                </div>
+            );
+        }
 
     // Main voting interface    
     return (
         <div className="voter-panel">
-            <h2>Rank Your Candidates (1 is highest)</h2>
-            {candidates.length === 0 ? (
-                <p>No candidates available to vote for.</p>
-            ) : (
-                <>
-                    {candidates.map((candidate) => (
-                        <div key={candidate.id} style={{ marginBottom: '1rem' }}>
-                            <label>
-                                {candidate.name} ({candidate.party}):
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max={candidates.length}
-                                    value={rankings[candidate.id] || ""}
-                                    onChange={(e) => handleRankingChange(candidate.id, parseInt(e.target.value))}
-                                style={{ marginLeft: '0.5rem', width: '60px' }}
-                                />  
-                    </label>
-                </div>
-            ))}
-           
-            <button onClick={handleSubmit} style={{ marginTop: '15px'}}>
-                Submit Ranked Vote
-            </button>
-            </>
-            )}
+            <h2>Voter Panel</h2>
+            <div style={{
+                padding: "1rem",
+                backgroundColor: "#e3f2fd",
+                border: "1px solid #2196f3",
+                borderRadius: "4px",
+                marginBottom: "1rem"
+            }}>
+                <h3 style={{ color: "#1976d2", margin: "0 0 0.5rem 0" }}>Ready to Vote</h3>
+                <p style={{ margin: "0", color: "#666" }}>
+                    Rank your preferred candidates below (1 = highest preference).
+                </p>
+            </div>
+
+            <DigitalBallot 
+                candidates={candidates}
+                rankings={rankings}
+                onRankingChange={handleRankingChange}
+                onSubmit={handleSubmit}
+                hasVoted={hasVoted}
+                votingClosed={votingClosed}
+                isPreviewMode={false}
+                isRankingSystem={true}
+            />
+
             {message && (
-                <p style={{ color: success ? "green" : "red", marginTop: "1rem"}}>
-                    {message}
+                <div style={{
+                    marginTop: "1rem",
+                    padding: "1rem",
+                    backgroundColor: success ? "#d4edda" : "#f8d7da",
+                    border: `1px solid ${success ? "#c3e6cb" : "#f5c6cb"}`,
+                    borderRadius: "4px"
+                }}>
+                    <p style={{ 
+                        color: success ? "#155724" : "#721c24", 
+                        margin: "0",
+                        fontWeight: "bold"
+                    }}>
+                        {message}
                     </p>
-    )}
+                </div>
+            )}
         </div>
     );
 });
 
 export default VoterPanel;
+
+
