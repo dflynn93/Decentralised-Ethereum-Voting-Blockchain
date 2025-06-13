@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import AdminPanel from "./AdminPanel";
 import ObserverPanel from "./ObserverPanel";
 import VoterPanel from "./VoterPanel";
+import Footer from "./footer.jsx"; 
 
 function App() {
     const [walletAddress, setWalletAddress] = useState('');
@@ -116,7 +117,7 @@ function App() {
         setVotingHistory(newHistory);
         localStorage.setItem("votingHistory", JSON.stringify(newHistory));
 
-        alert('Voting has been ${action} at ${timestamp}.');
+        alert(`Voting has been ${action} at ${timestamp}.`);
     };
 
     const refreshCandidates = async () => {
@@ -158,7 +159,7 @@ function App() {
             {/* Wallet Info */}
             <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
                 <strong>Wallet Address:</strong> {walletAddress ?
-                    'Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}' :
+                    `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` :
                     'Not connected'
                 }
                 {hasVoted && walletAddress && (
@@ -273,6 +274,9 @@ function App() {
                 <span style={{ color: '#00ff88', fontSize: '14px' }}>🔗</span>
                 Powered & Secured by Blockchain
             </div>
+
+            {/* Footer */}
+            <Footer />
                           
         </div>
     );
