@@ -1,6 +1,6 @@
 // App.jsx
 import React, { useState, useEffect } from "react";
-import { getContract, getCandidates, hasUserVoted, submitRanking } from "./VotingContract.js";
+import { getContract, getCandidates, hasUserVoted, submitRanking, isCurrentUserAdmin } from "./VotingContract.js";
 import { ethers } from "ethers";
 
 import AdminPanel from "./AdminPanel";
@@ -16,6 +16,7 @@ function App() {
     const [hasVoted, setHasVoted] = React.useState(false);
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
     const [votingClosed, setVotingClosed] = useState(
         localStorage.getItem("votingClosed") === "true"
     );
@@ -57,6 +58,7 @@ function App() {
         try {
             const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
             setConnectionStatus("Connected! Loading contract...");
+
             const ethersProvider = new ethers.BrowserProvider(window.ethereum);
             const signer = await ethersProvider.getSigner();
             const address = await signer.getAddress();
@@ -67,11 +69,17 @@ function App() {
             const VotingContract = await getContract();
             setContract(VotingContract);
 
+            setConnectionStatus("Checking vote status...");
             const voted = await hasUserVoted(address);
             setHasVoted(voted);
 
+            setConnectionStatus("Loading candidates...");
             const candidateList = await getCandidates();
             setCandidates(candidateList);
+
+            setConnectionStatus("Checking admin status...");
+            const adminStatus = await isCurrentUserAdmin();
+            setIsAdmin(adminStatus);
 
             setConnectionStatus("Wallet connected successfully!");
             setLoading(false);
@@ -91,13 +99,20 @@ function App() {
        
     const handleSubmitRanking = async (rankedCandidateIds) => {
         try {
+            setConnectionStatus("Submitting your vote to blockchain...");
             await submitRanking(rankedCandidateIds);
+
+            setConnectionStatus("Vote submitted! Refreshing data...");
             const updated = await getCandidates();
             setCandidates(updated);
             setHasVoted(true);
+
+            setConnectionStatus("Vote successfully recorded!");
+            setTimeout(() =>setConnectionStatus(""), 3000);
         } catch (err) {
             console.error("Failed to submit ranking:", err);
-            alert("Vote failed: " + err.message);
+            setConnectionStatus("Vote failed: " + err.message);
+            setTimeout(() => setConnectionStatus(""), 5000);
         }
     };
 
@@ -124,14 +139,18 @@ function App() {
         try {
             const candidateList = await getCandidates();
             setCandidates(candidateList);
+            setConnectionStatus("Candidates refreshed!");
+            setTimeout(() => setConnectionStatus(""), 2000);
         } catch (error) {
             console.error("Failed to refresh candidates:", error);
+            setConnectionStatus("Failed to refresh candidates: " + error.message);
+            setTimeout(() => setConnectionStatus(""), 3000);
         }
     };
 
     const resetVoteStatus = () => {
         setHasVoted(false);
-        alert("Vote status has been reset for testing purposes.");
+        alert("Vote status has been reset for testing purposes. Note: This only affects the UI, not the blockchain.");
     };
 
     const connectWallet = async () => {
@@ -140,15 +159,88 @@ function App() {
 
     return (
         <div style={{ padding: '2rem' }}>
-            <h1>Eirvote - Blockchain Voting System</h1>
+            {/* Top Navigation with Wallet Connection */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '2rem',
+                padding: '1rem',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #dee2e6'
+            }}>
+                <div>
+                    <h1 style={{ margin: '0', fontSize: '1.8rem' }}>Eirvote - Blockchain Voting System</h1>
+                </div>
+                
+                {/* Wallet Connection Section */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    {!walletAddress ? (
+                        <button 
+                            onClick={connectWallet}
+                            style={{
+                                padding: '0.8rem 1.5rem',
+                                fontSize: '1rem',
+                                backgroundColor: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                            disabled={!!connectionStatus}
+                        >
+                            {connectionStatus ? 'Connecting...' : "Connect MetaMask"}
+                        </button>
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                                    Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                                </div>
+                                {isAdmin && (
+                                    <div style={{ fontSize: '0.8rem', color: '#dc3545', fontWeight: 'bold' }}>
+                                        Admin Account
+                                    </div>
+                                )}
+                                {hasVoted && (
+                                    <div style={{ fontSize: '0.8rem', color: '#28a745' }}>
+                                        Already Voted
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Role Selector */}
+                            {walletAddress && (
+                                <select 
+                                    onChange={(e) => setRole(e.target.value)} 
+                                    value={role}
+                                    style={{
+                                        padding: '0.5rem',
+                                        borderRadius: '4px',
+                                        border: '1px solid #ccc',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    <option value="">Select Role</option>
+                                    <option value="voter">Voter</option>
+                                    {isAdmin && <option value="admin">Admin</option>}
+                                    <option value="observer">Observer</option>
+                                </select>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
             
             {/* Connection Status */}
             {connectionStatus && (
                 <div style={{
                     padding: '1rem',
                     marginBottom: '1rem',
-                    backgroundColor: connectionStatus.includes('Yes') ? '#d4edda' :
-                        connectionStatus.includes('No') ? '#f8d7da' : '#d1ecf1',
+                    backgroundColor: connectionStatus.includes('successfully') || connectionStatus.includes('submitted') ? '#d4edda' :
+                        connectionStatus.includes('failed') || connectionStatus.includes('rejected') ? '#f8d7da' : '#d1ecf1',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
                 }}>
@@ -156,77 +248,65 @@ function App() {
             </div>
             )}
 
-            {/* Wallet Info */}
-            <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
-                <strong>Wallet Address:</strong> {walletAddress ?
-                    `Connected: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` :
-                    'Not connected'
-                }
-                {hasVoted && walletAddress && (
-                    <div style={{ marginTop: '0.5rem', color: '#28a745' }}>
-                        You have already voted in this election.
-                    </div>
-                )}
-            </div>
-
-            {!walletAddress && (
-                <div style={{ textAlign: 'center', margin: '1rem' }}>
-                <h3>Connect your Wallet to Start Voting</h3>
-                <p>You need to connect your MetaMask wallet to participate in the voting process.</p>
-                <button 
-                    onClick={connectWallet}
-                    style={{
-                        padding: '1rem 2rem',
-                        fontSize: '1.1rem',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                    }}
-                    disabled={!!connectionStatus}
-                    >
-                        {connectionStatus ? 'Connecting...' : "Connect MetaMask Wallet"}
-                    </button>
+            {/* Role Selection Warning */}
+            {walletAddress && !isAdmin && role === "admin" && (
+                <div style={{ 
+                    marginBottom: '1rem', 
+                    padding: '1rem',
+                    backgroundColor: '#f8d7da',
+                    border: '1px solid #f5c6cb',
+                    borderRadius: '4px',
+                    color: '#721c24'
+                }}>
+                    You are not the contract admin. Admin functions will not work.
                 </div>
             )}
 
-            {walletAddress && (
-                <div style={{ marginBottom: '1rem' }}>
-                    <label>
-                        Select Role:{" "}
-                        <select onChange={(e) => setRole(e.target.value)} value={role}>
-                            <option value="">-- choose --</option>
-                            <option value="voter">Voter</option>
-                            <option value="admin">Admin</option>
-                            <option value="observer">Observer</option>
-                        </select>
-                    </label>
+            {/* Welcome Message for Non-Connected Users */}
+            {!walletAddress && (
+                <div style={{ 
+                    textAlign: 'center', 
+                    margin: '3rem 0',
+                    padding: '2rem',
+                    backgroundColor: '#e3f2fd',
+                    borderRadius: '8px',
+                    border: '1px solid #bbdefb'
+                }}>
+                    <h2 style={{ color: '#1976d2', marginBottom: '1rem' }}>Welcome to Eirvote</h2>
+                    <p style={{ fontSize: '1.1rem', color: '#555', marginBottom: '1.5rem' }}>
+                        Ireland's secure blockchain-based voting system. Connect your MetaMask wallet to participate in democratic elections.
+                    </p>
+                    <div style={{ color: '#666', fontSize: '0.9rem' }}>
+                        🔐 Secure • 🗳️ Transparent • 🇮🇪 Irish Electoral Standards
+                    </div>
                 </div>
             )}
 
             {walletAddress && loading && (
-                <p>Loading contract data...</p>
-            )}
-
-            {/* Testing Reset Button */}
-            {walletAddress && (
-                <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                <button
-                    onClick={resetVoteStatus}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        backgroundColor: '#ffc107',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Reset Vote Status (Testing)
-                </button>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    <p>Loading contract data...</p>
                 </div>
             )}
 
+            {/* Testing Reset Button - Only show when connected */}
+            {walletAddress && (
+                <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                    <button
+                        onClick={resetVoteStatus}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            backgroundColor: '#ffc107',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Reset Vote Status (Testing)
+                    </button>
+                </div>
+            )}
+
+            {/* Panel Components */}
             {walletAddress && role === "admin" && !loading && (
                 <AdminPanel 
                     candidates={candidates}
@@ -239,9 +319,10 @@ function App() {
 
             {walletAddress && role === "observer" && !loading && (
                 <ObserverPanel 
-                candidates={candidates} 
-                votingClosed={votingClosed}
-                votingHistory={votingHistory}/>
+                    candidates={candidates} 
+                    votingClosed={votingClosed}
+                    votingHistory={votingHistory}
+                />
             )}
 
             {walletAddress && role === "voter" && !loading && (
@@ -277,7 +358,6 @@ function App() {
 
             {/* Footer */}
             <Footer />
-                          
         </div>
     );
 }
