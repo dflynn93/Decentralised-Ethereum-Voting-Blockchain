@@ -50,20 +50,31 @@ export const getCandidates = async () => {
 
 // Submit a ranked vote
 export const submitRanking = async (candidateIdsInRankOrder) => {
+    try {
     // rankingMap: { 0: 2, 3: 2, 1: 3 } // candidateId: rank
     const contract = await getContract();
     const ranks = candidateIdsInRankOrder.map((_, i) => i + 1); // Convert to 1-based ranks
+
+    console.log("Submitting ranking:", {
+        candidateIds: candidateIdsInRankOrder,
+        ranks: ranks
+    });
+
     const tx = await contract.submitRanking(candidateIdsInRankOrder, ranks);
     await tx.wait();
     return tx;
+} catch (error) {
+    console.error("Error submitting ranking:", error);
+    throw error;
+}
+
 };
 
 // Check if a voter has already voted
 export const hasUserVoted = async (address) => {
     try {
-        return false;
-    //const contract = await getContractReadOnly();
-    //return await contract.hasVoted(address);
+    const contract = await getContractReadOnly();
+    return await contract.hasVoted(address);
     }
     catch (error) {
         console.error("Error checking vote status:", error);
@@ -72,10 +83,51 @@ export const hasUserVoted = async (address) => {
 };
 
 export const addCandidate = async (name, party) => {
+    try {
     const contract = await getContract();
     const tx = await contract.addCandidate(name, party);
     await tx.wait();
     return tx;
+    } catch (error) {
+        console.error("Error adding candidate:", error);
+        throw error;
+    }
+};
+
+// Get current admin address
+export const getAdmin = async () => {
+    try {
+        const contract = await getContractReadOnly();
+        return await contract.admin();
+    } catch (error) {
+        console.error("error getting admin:", error);
+        return null;
+    }
+};
+
+// Check if current user is admin
+export const isCurrentUserAdmin = async () => {
+    try {
+        const signer = await getSigner();
+        const userAddress = await signer.getAddress();
+        const adminAddress = await getAdmin();
+        return userAddress.toLowerCase() === adminAddress.toLowerCase();
+    } catch (error) {
+        console.error("Error checking admin status:", error);
+        return false;
+    }
+};
+
+// Get voting status from contract 
+export const getVotingStatus = async() => {
+    try {
+        const contract = await getContractReadOnly();
+        // assumes you add a votingOpen variable to contract
+        return await contract.votingOpen();
+    } catch (error) {
+        console.error("Error getting voting status:", error);
+        return true; // Default to open if it won't check
+    }
 };
 
 /*export async function getAllCandidates() {
