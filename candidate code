@@ -1,0 +1,65 @@
+/*function App() {
+    const [newCandidateName, setNewCandidateName] = useState('');
+    const [newCandidateParty, setNewCandidateParty] = useState('');
+
+    const [showResults, setShowResults] = React.useState(false);
+
+const downloadResults = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(voteData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "voting_results.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    };
+
+    const resetElection = () => {
+        localStorage.clear();
+        setVoteData([...candidates]); //Reset votes in state
+        setHasVoted(false); // Reset vote block
+        alert('Election has been reset!');
+    };
+
+       
+    const addCandidate = () => {
+        if (!newCandidateName || !newCandidateParty) {
+            alert('Please enter both name and party.');
+            return;
+        }
+
+        const newId = voteData.length + 1;
+
+        const newCandidate = {
+            id: newId,
+            name: newCandidateName,
+            party: newCandidateParty,
+            votes: 0
+        };
+    };     
+     
+     
+     <label>
+                            Candidate Name:
+                            <input
+                                type="text"
+                                value={newCandidateName}
+                                onChange={(e) => setNewCandidateName(e.target.value)}
+                                />                            
+                        </label>
+                        <br />
+                        <label>
+                            Party:
+                            <input 
+                            type="text"
+                            value={newCandidateParty}
+                            onChange={(e) => setNewCandidateParty(e.target.value)}
+                            />
+                        </label>
+                        <br />
+                        <button onClick={addCandidate}>Add Candidate</button>
+                    </div>
+
+        };
+
+        */
