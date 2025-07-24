@@ -261,14 +261,14 @@ app.post('/api/admin/verify', (req, res) => {
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
     
     if (password === ADMIN_PASSWORD) {
-        console.log(`✅ Admin access granted for wallet: ${walletAddress}`);
+        console.log(`Admin access granted for wallet: ${walletAddress}`);
         res.json({
             success: true,
             message: 'Admin access granted',
             walletAddress: walletAddress
         });
     } else {
-        console.log(`❌ Wrong password for admin wallet: ${walletAddress}`);
+        console.log(`Wrong password for admin wallet: ${walletAddress}`);
         res.status(401).json({
             success: false,
             error: 'Incorrect admin password'

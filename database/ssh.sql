@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS admin_ssh_keys (
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Pre-populate with your 2 admin wallets (update these addresses)
+-- Pre-populate with your 2 admin wallets (update 2nd address)
 INSERT INTO admin_ssh_keys (wallet_address, public_key, fingerprint, admin_name) VALUES
 ('0x742d35Cc6635C0532925a3b8D5b9212C0f', 'PLACEHOLDER_KEY_1', 'PLACEHOLDER_FINGERPRINT_1', 'Admin 1'),
-('0x742d35Cc6635C0532925a3b8D5b9212C1f', 'PLACEHOLDER_KEY_2', 'PLACEHOLDER_FINGERPRINT_2', 'Admin 2')
+('0x742d35Cc6635C0532925a3b8D5b9212C1f', 'PLACEHOLDER_KEY_2', 'PLACEHOLDER_FINGERPRINT_2', 'Admin 2') 
 ON CONFLICT (wallet_address) DO NOTHING;
 
 -- Simple audit log

@@ -25,7 +25,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                 marginBottom: '2rem'
             }}>
                 <h2 style={{ margin: '0 0 1rem 0', color: '#2e7d32' }}>
-                    🇮🇪 PR-STV Irish Election Results
+                    🇮🇪 PR-STV Irish Election Results - BallyBeg, Co. Donegal
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                     <div>
@@ -64,7 +64,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                 marginBottom: '2rem'
             }}>
                 <h3 style={{ margin: '0 0 1rem 0', color: '#2e7d32' }}>
-                    Final Elected Candidates
+                    Final Elected Candidates for BallyBeg, Co. Donegal
                 </h3>
                 <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {summary.finalElected.map((candidate, index) => (
@@ -90,8 +90,8 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                                     {candidate.finalVotes} votes
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                                    Elected on Count {candidate.electedCount}
-                                    {!candidate.metQuota && '(without quota'};
+                                    Elected on Count {candidate.electedOnCount}
+                                    {!candidate.metQuota && ' (without quota)'}
                                 </div>
                             </div>
                         </div>
@@ -107,7 +107,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                 borderRadius: '8px',
                 marginBottom: '2rem'
             }}>
-                <h3 style={{ margin: '0 0 1rem 0' }}>Count-by-Count Results</h3>
+                <h3 style={{ margin: '0 0 1rem 0' }}>Count-by-Count Results for BallyBeg</h3>
 
                 {/* Count Selection */}
                 <div style={{ marginBottom: '1rem' }}>
@@ -132,7 +132,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                     </select>
                 </div>
 
-                {/*  Selected Count Results*/}
+                {/* Selected Count Results */}
                 {allCounts[selectedCount] && (
                     <div>
                         <div style={{
@@ -151,24 +151,46 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                             </p>
                         </div>
 
+                        {/* Fixed Table with Proper Alignment */}
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{
                                 width: '100%',
                                 borderCollapse: 'collapse',
-                                fontSize: '0.9rem'
+                                fontSize: '0.9rem',
+                                tableLayout: 'fixed'
                             }}>
                                 <thead>
                                     <tr style={{ backgroundColor: '#f8f9fa'}}>
-                                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                                        <th style={{ 
+                                            padding: '0.75rem', 
+                                            textAlign: 'left', 
+                                            borderBottom: '2px solid #dee2e6',
+                                            width: '35%'
+                                        }}>
                                             Candidate
                                         </th>
-                                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                                        <th style={{ 
+                                            padding: '0.75rem', 
+                                            textAlign: 'left', 
+                                            borderBottom: '2px solid #dee2e6',
+                                            width: '25%'
+                                        }}>
                                             Party
                                         </th>
-                                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                                        <th style={{ 
+                                            padding: '0.75rem', 
+                                            textAlign: 'center', 
+                                            borderBottom: '2px solid #dee2e6',
+                                            width: '20%'
+                                        }}>
                                             Votes
                                         </th>
-                                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                                        <th style={{ 
+                                            padding: '0.75rem', 
+                                            textAlign: 'center', 
+                                            borderBottom: '2px solid #dee2e6',
+                                            width: '20%'
+                                        }}>
                                             Status
                                         </th>
                                     </tr>
@@ -178,13 +200,21 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                                     .sort((a,b) => b.votes - a.votes)
                                     .map((candidate, index) => (
                                         <tr key={candidate.id} style={{
-                                            backgroundColor: candidate.status === 'elected' ? '#e8f6e9' :
+                                            backgroundColor: candidate.status === 'elected' ? '#e8f5e9' :
                                                             candidate.status === 'eliminated' ? '#ffebee' : '#fff'
                                         }}>
-                                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #dee2e6' }}>
+                                            <td style={{ 
+                                                padding: '0.75rem', 
+                                                borderBottom: '1px solid #dee2e6',
+                                                textAlign: 'left'
+                                            }}>
                                                 <strong>{candidate.name}</strong>
                                             </td>
-                                            <td style={{ padding: '0.75rem', borderBottom: '1px solid #dee2e6' }}>
+                                            <td style={{ 
+                                                padding: '0.75rem', 
+                                                borderBottom: '1px solid #dee2e6',
+                                                textAlign: 'left'
+                                            }}>
                                                 {candidate.party}
                                             </td>
                                             <td style={{
@@ -201,16 +231,18 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                                             <td style={{
                                                 padding: '0.75rem',
                                                 borderBottom: '1px solid #dee2e6',
-                                                textAlign: 'center',
+                                                textAlign: 'center'
                                             }}>
                                                 <span style={{
-                                                    padding: '0.25rem 0.5rem',
+                                                    padding: '0.25rem 0.75rem',
                                                     borderRadius: '12px',
                                                     fontSize: '0.8rem',
                                                     fontWeight: 'bold',
                                                     backgroundColor: candidate.status === 'elected' ? '#4caf50' :
                                                                     candidate.status === 'eliminated' ? '#f44336' : '#ffc107',
-                                                    color: 'white'
+                                                    color: 'white',
+                                                    display: 'inline-block',
+                                                    minWidth: '70px'
                                                 }}>
                                                     {candidate.status.toUpperCase()}
                                                 </span>
@@ -233,7 +265,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                 marginBottom: '2rem'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ margin: '0' }}> Sample Voter Ballots</h3>
+                    <h3 style={{ margin: '0' }}>Sample Voter Ballots from BallyBeg</h3>
                     <button
                         onClick={() => setShowBallots(!showBallots)}
                         style={{
@@ -259,7 +291,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                                     border: '1px solid #dee2e6',
                                     borderRadius: '4px'
                                 }}>
-                                    <strong>Ballot {index + 1}:</strong>
+                                    <strong>BallyBeg Ballot {index + 1}:</strong>
                                     <div style={{ marginTop: '0.25rem', fontSize: '0.9rem' }}>
                                         {Object.entries(ballot.preferences)
                                             .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
@@ -274,7 +306,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                             ))}
                         </div>
                         <p style={{ margin: '1rem 0 0 0', fontSize: '0.9rem', color: '#666', textAlign: 'center' }}>
-                            Showing 10 of {ballots.length} ballots
+                            Showing 10 of {ballots.length} ballots from BallyBeg constituency
                         </p>
                     </div>
                 )}
@@ -295,7 +327,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                         fontWeight: 'bold'
                     }}
                 >
-                    🔄 Run New PR-STV Simulation
+                    Run New PR-STV Simulation for BallyBeg
                 </button>
             </div>
         </div>

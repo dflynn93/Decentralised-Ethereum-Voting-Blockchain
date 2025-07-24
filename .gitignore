@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+
+# Build artifacts
+artifacts/
+cache/
+dist/
+
+# Local env files
+.env
+.env.local
+
+# Vite output
+.vite/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Log files
+*.log
+
+# SQL dumps
+*.sql
+
+# Optional: ignore build-info if not needed
+artifacts/build-info/

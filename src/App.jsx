@@ -1,10 +1,9 @@
-// App.jsx - FIXED VERSION
 import React, { useState, useEffect } from "react";
 import { getContract, getCandidates, hasUserVoted, submitRanking, isCurrentUserAdmin } from "./VotingContract.js";
 import { ethers } from "ethers";
 
 import AdminPanel from "../components/AdminPanel.jsx";
-import ObserverPanel from "../components/ObserverPanel";
+import ObserverPanel from "../components/ObserverPanel.jsx";
 import VoterPanel from "../components/VoterPanel.jsx";
 import Footer from "./footer.jsx";
 import SSHKeyVerification from "../components/SSHKeyVerification.jsx";
@@ -14,6 +13,7 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
     const [adminPassword, setAdminPassword] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleAdminLogin = async () => {
         console.log('STARTING ADMIN LOGIN PROCESS');
@@ -89,8 +89,9 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
                     <label style={{ display: "block", color: "white", fontWeight: "500", marginBottom: "0.5rem" }}>
                         Admin Password
                     </label>
+                    <div style={{ position: 'relative' }}>
                     <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={adminPassword}
                         onChange={(e) => setAdminPassword(e.target.value)}
                         placeholder="Enter admin password"
@@ -101,11 +102,31 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
                             border: "1px solid rgba(255, 255, 255, 0.3)",
                             borderRadius: "8px",
                             color: "white",
-                            outline: "none"
+                            outline: "none",
+                            boxSizing: "border-box"
                         }}
                         onKeyPress={(e) => e.key === 'Enter' && !isVerifying && handleAdminLogin()}
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                            position: 'absolute',
+                                right: '0.75rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontSize: '0.8rem',
+                                padding: '0.25rem'
+                        }}
+                    >
+                        {showPassword ? 'Hide' : 'Show'}
+                    </button>
                 </div>
+            </div>
 
                 {error && (
                     <div style={{ background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(252, 165, 165, 0.3)", borderRadius: "8px", padding: "0.75rem", marginBottom: "1rem" }}>
@@ -178,9 +199,15 @@ function App() {
     );
     const [connectionStatus, setConnectionStatus] = useState("");
 
+    // SSH verification state
     const [sshKeyVerified, setSSHKeyVerified] = useState(false);
     const [sshKeyFingerprint, setSSHKeyFingerprint] = useState('');
     const [showSimpleLogin, setShowSimpleLogin] = useState(null);
+
+    // State variables for observer panel
+    const [electionCalled, setElectionCalled] = useState(false);
+    const [electionCalledDate, setElectionCalledDate] = useState(null);
+    const [nominationDeadline, setNominationDeadline] = useState(null);
 
     useEffect(() => {
         const init = async () => {
@@ -192,7 +219,7 @@ function App() {
                     // Don't automatically request accounts, let user click connect
                     setLoading(false);
                 } catch (error) {
-                    console.error("Error initializing app:", error);
+                    console.error("Error initialising app:", error);
                     setLoading(false);
                 }
             } else {
@@ -204,7 +231,7 @@ function App() {
         init();
     }, []);
 
-    const initializeWallet = async () => {
+    const initialiseWallet = async () => {
         if (!window.ethereum) {
             alert("MetaMask not detected. Please install it to use this app.");
             return;
@@ -311,7 +338,7 @@ function App() {
     };
 
     const connectWallet = async () => {
-        await initializeWallet();
+        await initialiseWallet();
     };
 
     return (
@@ -469,7 +496,7 @@ function App() {
                 </div>
             )}
 
-            {/* Admin Panel Logic - FIXED */}
+            {/* Admin Panel Logic */}
             {walletAddress && role === "admin" && !loading && (
                 // Show admin panel if SSH key is verified (from either login method)
                 sshKeyVerified ? (
@@ -480,6 +507,9 @@ function App() {
                         onCandidateAdded={refreshCandidates}
                         votingHistory={votingHistory || []}
                         sshKeyFingerprint={sshKeyFingerprint}
+                        contract={contract}
+                        provider={provider}
+                        walletAddress={walletAddress}
                     />
                 ) : (
                     // Show login choice screen or specific login method
@@ -591,12 +621,17 @@ function App() {
                     )
                 )
             )}
-
+            {/* Observer Panel */}
             {walletAddress && role === "observer" && !loading && (
                 <ObserverPanel 
                     candidates={candidates} 
                     votingClosed={votingClosed}
                     votingHistory={votingHistory}
+                    contract={contract}
+                    provider={provider}
+                    electionCalled={electionCalled}
+                    electionCalledDate={electionCalledDate}
+                    nominationDeadline={nominationDeadline}
                 />
             )}
 

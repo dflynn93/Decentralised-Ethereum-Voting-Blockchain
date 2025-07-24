@@ -1,5 +1,7 @@
 import React, { useState, useEffect} from "react";
 import DigitalBallot from "../src/DigitalBallot";
+import { commitVoteWithZKP, revealVoteWithZKP, demonstrateZKP } from "../src/zkp/voteValidityZKP";
+import "./VoterPanel.css";
 
 const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingClosed, walletAddress }) => {
     const [rankings, setRankings] = useState({});
@@ -8,6 +10,12 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
     const [pendingVote, setPendingVote] = useState(null);
+
+    // ZKP-related state
+    const [zkpEnabled, setZkpEnabled] = useState(true);
+    const [zkpStatus, setZkpStatus] = useState('');
+    const [zkpProof, setZkpProof] = useState(null);
+    const [showZkpDemo, setShowZkpDemo] = useState(false);
 
     // Vote recovery - check for interrupted votes on component mount
     useEffect(() => {
@@ -25,7 +33,14 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                 if (minutesSince < 30) {
                     setPendingVote(voteData);
                     setRankings(voteData.rankings);
-                    setMessage("We found an interrupted vote from your previous session. Your rankings have been restored.");
+
+                    // Check if ZKP was generated
+                    if (voteData.zkpProof) {
+                        setZkpProof(voteData.zkpProof);
+                        setMessage("We found an interrupted vote with ZK proof from your previous session. Your rankings have been restored.");
+                    } else {
+                        setMessage("We found an interrupted vote from your previous session. You can continue where you left off.");
+                    }                      
                     setSuccess(null);
                 }
             }
@@ -50,7 +65,8 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
         localStorage.setItem(pendingVoteKey, JSON.stringify({
             rankings: newRankings,
             timestamp: new Date().toISOString(),
-            walletAddress: walletAddress
+            walletAddress: walletAddress,
+            zkpProof: zkpProof
         }));
     };
 
@@ -75,23 +91,59 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
             const cleanedRanks = Object.entries(rankings)
                 .sort((a, b) => a[1] - b[1])
                 .map(([id]) => parseInt(id));
+
+            if (zkpEnabled) {
+                // Submission with ZKP
+                setZkpStatus("Generating zero-knowledge proof...");
+                const zkpResult = await commitVoteWithZKP(cleanedRanks);
+
+                setZkpStatus('ZK proof generated successfully!');
+                setZkpProof(zkpResult.zkProof);
+
+                const pendingVoteKey = `pendingVote_${walletAddress}`;
+                const currentData = JSON.parse(localStorage.getItem(pendingVoteKey) || '{}');
+                localStorage.setItem(pendingVoteKey, JSON.stringify({
+                    ...currentData,
+                    zkProof: zkpResult.zkProof
+                }));
             
-            await onSubmitRanking(cleanedRanks);
+                setMessage("Vote submitted with zero-knowledge proof! Your privacy has been cryptographically protected.");
+            } else {
+                // Fallback to original submission
+                await onSubmitRanking(cleanedRanks);
+                setMessage("Vote submitted successfully!");
+            }
             
             // Clear pending vote from localStorage
             const pendingVoteKey = `pendingVote_${walletAddress}`;
             localStorage.removeItem(pendingVoteKey);
             
-            // Show success message with formal confirmation
-            setMessage("");
             setSuccess(true);
+            setZkpStatus('');
             
         } catch (error) {
             console.error("Error submitting rankings:", error);
-            setMessage("Failed to submit rankings. Please try again.");
+            setMessage(`Failed to submit rankings: ${error.message}`);
             setSuccess(false);
+            setZkpStatus('');
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    // ZKP Demo function
+    const runZkpDemo = async () => {
+        try {
+            setZkpStatus("Running ZKP demonstration...");
+            const demoResult = await demonstrateZKP();
+
+            setZkpStatus(`Demo completed. Proof valid: ${demoResult.verification.isValid}`);
+            console.log('ZKP Demo Result:', demoResult);
+
+            setTimeout(() => { setZkpStatus(''); }, 3000);
+        } catch (error) {
+            setZkpStatus(`ZKP demo failed: ${error.message}`);
+            setTimeout(() => { setZkpStatus(''); }, 3000);
         }
     };
 
@@ -129,7 +181,6 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
             <div style={{ marginTop: "2rem" }}>
                 <h2>Voter Panel</h2>
                 
-                {/* Formal Thank You Message */}
                 <div style={{
                     padding: "2rem",
                     border: "2px solid #28a745",
@@ -139,7 +190,7 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                     marginBottom: "2rem"
                 }}>
                     <h3 style={{ color: "#155724", margin: "0 0 1rem 0", fontSize: "1.5rem" }}>
-                        🗳️ Vote Successfully Recorded
+                        Vote Successfully Recorded
                     </h3>
                     <div style={{ color: "#155724", fontSize: "1.1rem", lineHeight: "1.6" }}>
                         <p style={{ margin: "0 0 1rem 0" }}>
@@ -148,6 +199,12 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                         <p style={{ margin: "0 0 1rem 0" }}>
                             Your vote has been securely recorded on the blockchain and cannot be changed or deleted.
                         </p>
+                        {zkpProof && (
+                            <p style={{ margin: "0 0 1rem 0", backgroundColor: "#c3e6cb",  padding: "0.5rem", borderRadius: "4px" }}>
+                                <strong>Privacy Enhanced:</strong> Your vote was protected with zero-knowledge cryptography.
+                                <br />Proof Type: {zkpProof.metadata?.proofType || 'VOTE_VALIDITY'}
+                            </p>
+                        )}
                         <p style={{ margin: "0 0 1rem 0" }}>
                             <strong>Voter Address:</strong> {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
                         </p>
@@ -175,7 +232,94 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
     return (
         <div className="voter-panel">
             <h2>Voter Panel</h2>
-            
+
+            {/* ZKP Controls */}
+            <div style={{
+                padding: "1rem",
+                backgroundColor: "#e3f2fd",
+                border: "1px solid #2196f3",
+                borderRadius: "4px",
+                marginBottom: "1rem"
+            }}>
+                <h4 style={{ color: "#1976d2", margin: "0 0 0.5rem 0" }}>
+                    Zero-Knowledge Privacy Protection
+                </h4>
+                <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "0.5rem" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                         <input
+                            type="checkbox"
+                            checked={zkpEnabled}
+                            onChange={(e) => setZkpEnabled(e.target.checked)}
+                        />
+                        Enable ZK Proof Generation
+                    </label>
+                    <button
+                        onClick={() => setShowZkpDemo(!showZkpDemo)}
+                        style={{
+                            padding: "0.25rem 0.75rem",
+                            backgroundColor: "#ff9800",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "0.8rem"
+                        }}
+                    >
+                        {showZkpDemo ? "Hide ZKP Demo" : "Show ZKP Demo"}
+                    </button>
+            </div>
+
+                <p style={{ margin: "0", color: "#666", fontSize: "0.9rem" }}>
+                    {zkpEnabled ?
+                        "Your vote will be cryptographically proven valid without revealing your choices." :
+                        "Standard voting mode - vote content may be observable during commit phase."
+                    }
+                </p>
+
+                {zkpStatus && (
+                    <div style={{
+                        marginTop: "0.5rem",
+                        padding: "0.5rem",
+                        backgroundColor: "#fff3cd",
+                        border: "1px solid #ffc107",
+                        borderRadius: "4px",
+                        fontSize: "0.9rem",
+                    }}>
+                        {zkpStatus}
+                    </div>
+                )}
+
+                {/* ZKP Demo Section */}
+                {showZkpDemo && (
+                    <div style={{
+                        marginTop: "1rem",
+                        padding: "1rem",
+                        backgroundColor: "#fff3cd",
+                        border: "1px solid #ffc107",
+                        borderRadius: "4px"
+                    }}>
+                        <h5 style={{ margin: "0 0 0.5rem 0" }}>Zero-Knowledge Proof Demo</h5>
+                        <p style={{ margin: "0 0 1rem 0", fontSize: "0.9rem" }}>
+                            This demonstrates how ZK proofs work. We'll prove a sample vote is valid without revealing the vote content.
+                        </p>
+                        <button
+                            onClick={runZkpDemo}
+                            disabled={zkpStatus.includes("Running")}
+                            style={{
+                                padding: "0.5rem 1rem",
+                                backgroundColor: "#4caf50",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Run ZKP Demo
+                        </button>
+                    </div>
+                )}
+            </div>
+
             {pendingVote && (
                 <div style={{
                     padding: "1rem",
@@ -190,20 +334,22 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                     <p style={{ margin: "0", color: "#856404" }}>
                         We detected an interrupted voting session from {new Date(pendingVote.timestamp).toLocaleString()}. 
                         Your previous rankings have been restored. You can modify them or continue where you left off.
+                        {pendingVote.zkpProof && " ZK proof preserved."}
                     </p>
                 </div>
             )}
 
             <div style={{
                 padding: "1rem",
-                backgroundColor: "#e3f2fd",
-                border: "1px solid #2196f3",
+                backgroundColor: "#e8f5e9",
+                border: "1px solid #4caf50",
                 borderRadius: "4px",
                 marginBottom: "1rem"
             }}>
-                <h3 style={{ color: "#1976d2", margin: "0 0 0.5rem 0" }}>Ready to Vote</h3>
+                <h3 style={{ color: "#2e7d32", margin: "0 0 0.5rem 0" }}>Ready to Vote</h3>
                 <p style={{ margin: "0", color: "#666" }}>
-                    Rank your preferred candidates below (1 = highest preference). Your vote will be permanently recorded on the blockchain.
+                    Rank your preferred candidates below (1 = highest preference). Your vote will be permanently recorded on the blockchain
+                    {zkpEnabled ? " with cryptographic privacy protection." : "."}
                 </p>
             </div>
 
@@ -219,7 +365,7 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                 isSubmitting={isSubmitting}
             />
 
-            {/* Final Confirmation Modal */}
+            {/* Final Confirmation Modal with ZKP info */}
             {showFinalConfirmation && (
                 <div style={{
                     position: 'fixed',
@@ -267,6 +413,26 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                                 })
                             }
                         </div>
+
+                        {/* ZKP Information */}
+                        {zkpEnabled && (
+                            <div style={{
+                                backgroundColor: '#e3f2fd',
+                                padding: '1rem',
+                                borderRadius: '4px',
+                                marginBottom: '1rem',
+                                border: '1px solid #2196f3'
+                            }}>
+                                <h4 style={{ margin: '0 0 0.5rem 0', color: '#1976d2' }}>
+                                    Privacy Protection Enabled
+                                </h4>
+                                <p style={{ margin: '0', fontSize: '0.9rem', color: '#666' }}>
+                                    A zero-knowledge proof will be generated to verify your vote is valid 
+                                    without revealing your candidate preferences. This adds an extra layer 
+                                    of cryptographic privacy to your vote.
+                                </p>
+                            </div>
+                        )}
                         
                         <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.9rem', color: '#666' }}>
                             Your vote will be permanently recorded on the blockchain and associated with wallet: 
@@ -291,7 +457,7 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                                 onClick={confirmFinalSubmission}
                                 style={{
                                     padding: '0.75rem 1.5rem',
-                                    backgroundColor: '#28a745',
+                                    backgroundColor: zkpEnabled ? '#2196f3' : '#28a745',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '4px',
@@ -299,7 +465,7 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                                     fontWeight: 'bold'
                                 }}
                             >
-                                Submit Vote Permanently
+                                {zkpEnabled ? 'Submit with ZK Proof' : 'Submit Vote Permanently'}
                             </button>
                         </div>
                     </div>
@@ -321,6 +487,14 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
                     }}>
                         {message}
                     </p>
+                    {success && zkpProof && (
+                        <div style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+                        <strong>ZK Proof Details:</strong>
+                        <br />Type: {zkpProof.metadata?.proofType || 'VOTE_VALIDITY'}
+                        <br />Generated: {new Date(zkpProof.metadata?.generatedAt || Date.now()).toLocaleString()}
+                        <br />Candidates: {zkpProof.publicSignals?.numCandidates || 'Unknown'}
+                    </div>
+                    )}
                 </div>
             )}
         </div>

@@ -1,0 +1,788 @@
+/* ObserverPanel.css */
+
+.observer-panel {
+    margin-top: 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.observer-panel h2 {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+/* Login Styles */
+.login-container {
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.login-container h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.login-input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
+}
+
+.login-button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.login-button:hover {
+    background-color: #004494;
+}
+
+.test-credentials {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    padding: 1rem;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+/* Real-time Clock */
+.real-time-clock {
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.real-time-clock h4 {
+    margin: 0;
+    color: #1976d2;
+    font-size: 1.1rem;
+}
+
+/* Election Status */
+.election-status {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 2px solid;
+    border-radius: 8px;
+}
+
+.election-status h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+}
+
+.election-status p {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.status-grid div {
+    padding: 0.5rem 0;
+}
+
+.status-grid strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #333;
+}
+
+.status-grid p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+.time-remaining.ended {
+    color: #dc3545;
+    font-style: italic;
+}
+
+.time-remaining.active {
+    color: #fd7e14;
+    font-style: italic;
+}
+
+.voter-registration-notice {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.voter-registration-notice strong {
+    color: #333;
+}
+
+.voter-registration-notice p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+/* Monitoring Status */
+.monitoring-status {
+    padding: 1rem;
+    border: 2px solid;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.monitoring-status.active {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.monitoring-status.inactive {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+}
+
+.monitoring-status h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.monitoring-status.active h3 {
+    color: #2e7d32;
+}
+
+.monitoring-status.inactive h3 {
+    color: #856404;
+}
+
+.monitoring-status p {
+    margin: 0;
+}
+
+.monitoring-status.active p {
+    color: #2e7d32;
+}
+
+.monitoring-status.inactive p {
+    color: #856404;
+}
+
+/* Results Embargo */
+.results-embargo {
+    padding: 1.5rem;
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.results-embargo h3 {
+    color: #856404;
+    margin: 0 0 0.5rem 0;
+}
+
+.results-embargo p {
+    color: #856404;
+    margin: 0;
+    font-weight: bold;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #dee2e6;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 1rem 1.5rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-weight: normal;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-button.active {
+    font-weight: bold;
+}
+
+.tab-button:hover {
+    opacity: 0.8;
+}
+
+/* Tab Content */
+.tab-content {
+    min-height: 400px;
+}
+
+/* Election Summary */
+.election-summary {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.election-summary.open {
+    background-color: #e8f5e9;
+}
+
+.election-summary.closed {
+    background-color: #ffebee;
+}
+
+.election-summary h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-grid div {
+    text-align: center;
+}
+
+.summary-grid strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.summary-grid p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.status-open {
+    color: #388e3c !important;
+}
+
+.status-closed {
+    color: #d32f2f !important;
+}
+
+/* Statistics Panel */
+.statistics-panel {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.statistics-panel h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.stats-grid div {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.stats-grid strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.stats-grid p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Export Panel */
+.export-panel {
+    padding: 1.5rem;
+    border: 1px solid #007bff;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+}
+
+.export-panel h3 {
+    margin: 0 0 1rem 0;
+    color: #1976d2;
+}
+
+.export-panel p {
+    margin: 0 0 1rem 0;
+    color: #555;
+}
+
+.export-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.export-button:hover {
+    background-color: #0056b3;
+}
+
+/* Event Filters */
+.event-filters {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.event-filters label {
+    margin-right: 0.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.event-filters select,
+.event-filters input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.event-filters input {
+    width: 200px;
+}
+
+/* Event Stream */
+.event-stream {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.event-item {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    border-left: 4px solid;
+}
+
+.event-item.historical {
+    background-color: #f8f9fa;
+    border-left-color: #6c757d;
+}
+
+.event-item.live {
+    background-color: #ffffff;
+    border-left-color: #28a745;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.25rem;
+}
+
+.event-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.event-live-badge {
+    margin-left: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    background-color: #28a745;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 12px;
+}
+
+.event-description {
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.event-metadata {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.event-stream-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+}
+
+/* Analytics */
+.analytics-container {
+    display: grid;
+    gap: 2rem;
+}
+
+.event-type-distribution {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.event-type-distribution h4 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.event-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.event-type-card {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.event-type-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.event-type-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+/* Election Timeline */
+.election-timeline {
+    padding: 1.5rem;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.election-timeline h4 {
+    margin: 0 0 1rem 0;
+    color: #333;
+}
+
+.timeline-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.timeline-event {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+}
+
+.timeline-event-title {
+    font-weight: bold;
+    color: #0056b3;
+    margin-bottom: 0.25rem;
+}
+
+.timeline-event-time {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Candidates Section */
+.candidates-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.candidates-empty {
+    color: #666;
+    font-style: italic;
+    padding: 2rem;
+    text-align: center;
+}
+
+.candidate-item {
+    padding: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.candidate-item:last-child {
+    border-bottom: none;
+}
+
+.candidate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.candidate-name {
+    margin: 0 0 0.5rem 0;
+    color: #0056b3;
+    font-size: 1.1rem;
+}
+
+.candidate-party {
+    margin: 0;
+    color: #666;
+}
+
+.candidate-metadata {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.candidate-votes {
+    font-size: 0.9rem;
+    color: #28a745;
+    margin-top: 0.5rem;
+}
+
+/* Ballot Preview */
+.ballot-preview-container {
+    margin-top: 1rem;
+}
+
+.ballot-preview-note {
+    color: #666;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+/* Logout Button */
+.logout-container {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.logout-button {
+    padding: 0.5rem 1rem;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+    background-color: #545b62;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .observer-panel {
+        margin-top: 1rem;
+        padding: 0 1rem;
+    }
+
+    .tab-navigation {
+        flex-direction: column;
+        border-bottom: none;
+    }
+
+    .tab-button {
+        margin-bottom: 0.5rem;
+        border-bottom: none;
+        border-left: 3px solid transparent;
+    }
+
+    .tab-button.active {
+        border-bottom: none;
+        border-left-color: currentColor;
+    }
+
+    .status-grid,
+    .summary-grid,
+    .stats-grid,
+    .event-type-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .event-filters input {
+        width: 100%;
+    }
+
+    .login-container {
+        margin: 0 1rem;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .observer-panel h2 {
+        font-size: 1.5rem;
+    }
+
+    .real-time-clock {
+        padding: 0.75rem;
+    }
+
+    .real-time-clock h4 {
+        font-size: 1rem;
+    }
+
+    .election-status,
+    .monitoring-status,
+    .results-embargo,
+    .statistics-panel,
+    .export-panel {
+        padding: 1rem;
+    }
+
+    .tab-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation for live events */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.event-item.live {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Focus states for accessibility */
+.login-input:focus,
+.tab-button:focus,
+.export-button:focus,
+.logout-button:focus,
+.event-filters select:focus,
+.event-filters input:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0056b3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Print styles */
+@media print {
+    .tab-navigation,
+    .logout-container,
+    .export-panel {
+        display: none;
+    }
+
+    .observer-panel {
+        margin-top: 0;
+    }
+
+    .election-status,
+    .monitoring-status,
+    .statistics-panel {
+        break-inside: avoid;
+    }
+}

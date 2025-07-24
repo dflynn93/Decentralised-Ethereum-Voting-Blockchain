@@ -1,0 +1,912 @@
+/* AdminPanel CSS Styles */
+
+.admin-panel {
+    margin-top: 2rem;
+}
+
+.admin-panel h2 {
+    margin-bottom: 1rem;
+}
+
+/* SSH Verification */
+.ssh-verification {
+    padding: 0.5rem 1rem;
+    background-color: #e8f5e9;
+    border: 1px solid #4caf50;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.ssh-verification strong {
+    color: #2e7d32;
+}
+
+.ssh-verification span {
+    margin-left: 1rem;
+    color: #2e7d32;
+}
+
+/* Real-time Clock */
+.real-time-clock {
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.real-time-clock h4 {
+    margin: 0;
+    color: #1976d2;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    display: flex;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 1rem 2rem;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    white-space: nowrap;
+}
+
+.tab-button.election {
+    background-color: #f0f8ff;
+    color: #1976d2;
+}
+
+.tab-button.election.active {
+    background-color: #e3f2fd;
+    border-bottom-color: #1976d2;
+}
+
+.tab-button.candidates {
+    background-color: #f8fff8;
+    color: #2e7d32;
+}
+
+.tab-button.candidates.active {
+    background-color: #e8f5e9;
+    border-bottom-color: #2e7d32;
+}
+
+.tab-button.voters {
+    background-color: #fff8e1;
+    color: #f57c00;
+}
+
+.tab-button.voters.active {
+    background-color: #ffecb3;
+    border-bottom-color: #f57c00;
+}
+
+.tab-button.testing {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.tab-button.testing.active {
+    background-color: #e1bee7;
+    border-bottom-color: #7b1fa2;
+}
+
+.tab-button:not(.active) {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+/* Election Status */
+.election-status {
+    padding: 1.5rem;
+    border: 2px solid;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.election-status.called {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.election-status.not-called {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+}
+
+.election-status h3 {
+    margin: 0 0 1rem 0;
+}
+
+.election-status.called h3 {
+    color: #2e7d32;
+}
+
+.election-status.not-called h3 {
+    color: #856404;
+}
+
+.election-status p {
+    margin: 0 0 1rem 0;
+}
+
+.election-status.not-called p {
+    color: #856404;
+}
+
+.election-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.election-grid div strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.call-election-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.call-election-btn:hover {
+    background-color: #e0a800;
+}
+
+.time-remaining {
+    margin: 0.25rem 0 0 0;
+    font-weight: bold;
+}
+
+.time-remaining.passed {
+    color: #d32f2f;
+}
+
+.time-remaining.active {
+    color: #2e7d32;
+}
+
+.nomination-status {
+    margin: 0.25rem 0 0 0;
+    font-weight: bold;
+}
+
+.nomination-status.open {
+    color: #2e7d32;
+}
+
+.nomination-status.closed {
+    color: #d32f2f;
+}
+
+/* Voter Registration Status */
+.voter-registration-status {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.voter-registration-status h3 {
+    margin: 0 0 1rem 0;
+}
+
+.voter-registration-status .election-grid {
+    margin-top: 1rem;
+}
+
+/* Results Embargo */
+.results-embargo {
+    padding: 1.5rem;
+    background-color: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.results-embargo h3 {
+    color: #856404;
+    margin: 0 0 0.5rem 0;
+}
+
+.results-embargo p {
+    color: #856404;
+    margin: 0;
+}
+
+/* Voting Status Control */
+.voting-status {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.voting-status.open {
+    background-color: #e8f5e9;
+}
+
+.voting-status.closed {
+    background-color: #ffebee;
+}
+
+.toggle-voting-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-voting-btn.open {
+    background-color: #4caf50;
+}
+
+.toggle-voting-btn.close {
+    background-color: #f44336;
+}
+
+.toggle-voting-btn:hover {
+    opacity: 0.9;
+}
+
+/* Candidate Nomination Form */
+.nomination-form {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 2px solid;
+    border-radius: 8px;
+}
+
+.nomination-form.open {
+    border-color: #4caf50;
+    background-color: #f8fff8;
+}
+
+.nomination-form.closed {
+    border-color: #ccc;
+    background-color: #f5f5f5;
+}
+
+.nomination-form h3 {
+    margin-bottom: 1rem;
+}
+
+.nomination-form.open h3 {
+    color: #2e7d32;
+}
+
+.nomination-form.closed h3 {
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-label .required {
+    color: red;
+}
+
+.form-label small {
+    font-weight: normal;
+    color: #666;
+}
+
+.form-input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-input.full-width {
+    width: 100%;
+}
+
+.form-input.age-input {
+    width: 150px;
+}
+
+.form-input:disabled {
+    background-color: #f5f5f5;
+}
+
+.form-input.enabled {
+    background-color: white;
+}
+
+.radio-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.radio-option input {
+    margin-right: 0.5rem;
+}
+
+.radio-option small {
+    margin-left: 0.5rem;
+    color: #666;
+}
+
+.submit-nomination-btn {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.submit-nomination-btn.enabled {
+    background-color: #4caf50;
+}
+
+.submit-nomination-btn.enabled:hover {
+    background-color: #45a049;
+}
+
+.submit-nomination-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.deadline-notice {
+    margin: 1rem 0 0 0;
+    color: #d32f2f;
+    font-size: 0.9rem;
+}
+
+/* Results Display */
+.results-section h3 {
+    margin-bottom: 1rem;
+}
+
+.candidate-list {
+    list-style: none;
+    padding: 0;
+}
+
+.candidate-item {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.candidate-item.winner {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.candidate-item.regular {
+    background-color: #f8f9fa;
+}
+
+.results-locked {
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.results-locked .lock-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #666;
+}
+
+.results-locked h4 {
+    color: #666;
+    margin: 0 0 0.5rem 0;
+}
+
+.results-locked p {
+    color: #666;
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+}
+
+.results-locked .candidate-list {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.results-locked .candidate-list li {
+    margin: 0.25rem 0;
+}
+
+/* Winner Announcement */
+.winner-announcement {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #e8f5e9;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+}
+
+.winner-announcement h4 {
+    margin: 0 0 0.5rem 0;
+}
+
+.winner-announcement.single h4 {
+    color: #2e7d32;
+}
+
+.winner-announcement.tie h4 {
+    color: #f57f17;
+}
+
+.winner-announcement p {
+    margin: 0;
+}
+
+.winner-announcement.single p {
+    color: #2e7d32;
+}
+
+.winner-announcement ul {
+    margin: 0;
+}
+
+.winner-announcement.tie ul {
+    color: #f57f17;
+}
+
+/* PR-STV Simulation */
+.prst-simulation {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 2px solid #4CAF50;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+}
+
+.prst-simulation h3 {
+    margin: 0 0 1rem 0;
+    color: #2e7d32;
+}
+
+.prst-simulation p {
+    margin: 0 0 1rem 0;
+    color: #666;
+}
+
+.simulation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.simulation-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.quota-display {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.run-simulation-btn {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.run-simulation-btn.enabled {
+    background-color: #4CAF50;
+}
+
+.run-simulation-btn.enabled:hover {
+    background-color: #45a049;
+}
+
+.run-simulation-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.show-results-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.show-results-btn:hover {
+    background-color: #0056b3;
+}
+
+.simulation-notice {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #d32f2f;
+}
+
+/* Ballot Testing */
+.ballot-testing {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.preview-ballot-btn {
+    padding: 0.5rem 1rem;
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.preview-ballot-btn:hover {
+    background-color: #138496;
+}
+
+.ballot-testing p {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Testing Controls */
+.testing-controls {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid orange;
+    background-color: #fff3cd;
+    border-radius: 4px;
+}
+
+.testing-controls p {
+    margin-bottom: 0.5rem;
+}
+
+.reset-ui-btn {
+    padding: 0.5rem 1rem;
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.reset-ui-btn:hover {
+    background-color: #e0a800;
+}
+
+.clear-data-btn {
+    padding: 0.5rem 1rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.clear-data-btn:hover {
+    background-color: #c82333;
+}
+
+/* Voting Activity Log */
+.activity-log {
+    margin-top: 2rem;
+}
+
+.activity-log h4 {
+    margin-bottom: 1rem;
+}
+
+.activity-log-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.activity-log-entry {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Voter Registration Table */
+.voter-registration-section h3 {
+    margin-bottom: 1rem;
+}
+
+.voter-registration-section p {
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+.voter-table-container {
+    overflow-x: auto;
+}
+
+.voter-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.voter-table thead tr {
+    background-color: #f5f5f5;
+}
+
+.voter-table th {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+}
+
+.voter-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.voter-table tbody tr {
+    border-bottom: 1px solid #eee;
+}
+
+.voter-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.voter-name {
+    font-weight: 500;
+}
+
+.pps-number {
+    font-family: monospace;
+}
+
+.submission-date {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.approve-btn {
+    padding: 0.5rem 1rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.approve-btn:hover {
+    background-color: #45a049;
+}
+
+.reject-btn {
+    padding: 0.5rem 1rem;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.reject-btn:hover {
+    background-color: #da190b;
+}
+
+.processed-status {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Voter Registration Info */
+.voter-info {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 4px;
+}
+
+.voter-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1976d2;
+}
+
+.voter-info p {
+    margin: 0;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tab-navigation {
+        flex-direction: column;
+        border-bottom: none;
+    }
+    
+    .tab-button {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+        border-bottom: none;
+        border-left: 3px solid transparent;
+    }
+    
+    .tab-button.active {
+        border-bottom: none;
+        border-left-color: currentColor;
+    }
+    
+    .election-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .simulation-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .voter-table {
+        font-size: 0.85rem;
+    }
+    
+    .voter-table th,
+    .voter-table td {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        margin-top: 1rem;
+    }
+    
+    .real-time-clock {
+        padding: 0.5rem;
+    }
+    
+    .real-time-clock h4 {
+        font-size: 1rem;
+    }
+    
+    .election-status,
+    .voter-registration-status,
+    .nomination-form,
+    .prst-simulation {
+        padding: 1rem;
+    }
+    
+    .results-locked {
+        padding: 1rem;
+    }
+    
+    .results-locked .lock-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Animation for real-time updates */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.time-remaining.active {
+    animation: pulse 2s infinite;
+}
+
+/* Focus states for accessibility */
+.tab-button:focus,
+.call-election-btn:focus,
+.toggle-voting-btn:focus,
+.submit-nomination-btn:focus,
+.run-simulation-btn:focus,
+.show-results-btn:focus,
+.preview-ballot-btn:focus,
+.reset-ui-btn:focus,
+.clear-data-btn:focus,
+.approve-btn:focus,
+.reject-btn:focus {
+    outline: 2px solid #2196f3;
+    outline-offset: 2px;
+}
+
+.form-input:focus {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* General Utilities */
+hr {
+    margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #ccc;
+}
+
+/* Print styles */
+@media print {
+    .tab-navigation,
+    .testing-controls,
+    .action-buttons {
+        display: none;
+    }
+    
+    .admin-panel {
+        margin-top: 0;
+    }
+    
+    .election-status,
+    .voter-registration-status,
+    .nomination-form {
+        break-inside: avoid;
+    }
+}
