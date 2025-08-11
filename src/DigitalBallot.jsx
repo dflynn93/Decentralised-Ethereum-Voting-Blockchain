@@ -56,13 +56,6 @@ const DigitalBallot = ({
         return "OFFICIAL BALLOT";
     };
 
-    const getStatusColor = () => {
-        if (isPreviewMode) return "#ffc107";
-        if (votingClosed) return "#dc3545";
-        if (hasVoted) return "#28a745";
-        return "#0056b3";
-    };
-
     // Function to get candidate image based on their order
     const getCandidateImage = (candidateIndex) => {
         return candidateImages[candidateIndex] || null;
@@ -82,25 +75,10 @@ const DigitalBallot = ({
             position: 'relative',
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
         }}>
-            {/* Watermark */}
-            <div style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                transform: 'rotate(15deg)',
-                fontSize: '48px',
-                color: 'rgba(220, 53, 69, 0.1)',
-                fontWeight: 'bold',
-                zIndex: 1,
-                userSelect: 'none',
-                pointerEvents: 'none'
-            }}>
-                {getBallotStatus()}
-            </div>
-
+            
             {/* Header */}
             <div style={{
-                backgroundColor: getStatusColor(),
+                backgroundColor: '#007bff',
                 color: 'white',
                 padding: '15px 20px',
                 textAlign: 'center',
@@ -291,28 +269,7 @@ const DigitalBallot = ({
                                             )}
                                         </div>
                                     )}
-
-                                    {/* Party Logo Placeholder */}
-                                    <div style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        border: '2px solid #dee2e6',
-                                        marginRight: '20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: '#f8f9fa',
-                                        fontSize: '0.8rem',
-                                        textAlign: 'center',
-                                        color: '#6c757d',
-                                        flexShrink: 0
-                                    }}>
-                                        {candidate.party ? 
-                                            candidate.party.substring(0, 3).toUpperCase() : 
-                                            'IND'
-                                        }
-                                    </div>
-
+                                    
                                     {/* Candidate Information */}
                                     <div style={{ flex: 1 }}>
                                         <h3 style={{

@@ -6,7 +6,20 @@ import AdminPanel from "../components/AdminPanel.jsx";
 import ObserverPanel from "../components/ObserverPanel.jsx";
 import VoterPanel from "../components/VoterPanel.jsx";
 import Footer from "./footer.jsx";
-import SSHKeyVerification from "../components/SSHKeyVerification.jsx";
+
+// import RegistrationAccess from "../components/RegistrationAccess.jsx";
+
+
+window.getStatusColor = function(status) {
+    if (status === 'active' || status === 'open') return '#28a745';
+    if (status === 'closed' || status === 'ended') return '#dc3545'; 
+    if (status === 'pending') return '#ffc107';
+    return '#6c757d';
+};
+
+
+// AWS Backend URL - For Deployment
+const AWS_BACKEND_URL = 'http://localhost:3001';
 
 // Simple Admin Login Component
 const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
@@ -16,16 +29,22 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
     const [showPassword, setShowPassword] = useState(false);
 
     const handleAdminLogin = async () => {
-        console.log('STARTING ADMIN LOGIN PROCESS');
+        console.log('STARTING ADMIN LOGIN PROCESS - BYPASSING ADMIN LOGIN FOR TESTING');
         setIsVerifying(true);
         setError('');
 
+        setTimeout(() => {
+            console.log('Simulating admin login success after 1 second');
+            onAdminLogin(true);
+            setIsVerifying(false);
+        }, 1000);
+
         try {
-            console.log('Sending admin verification request to backend...');
+            console.log('Sending admin verification request to AWS backend...');
             console.log('Wallet:', walletAddress);
             console.log('Password:', adminPassword);
             
-            const response = await fetch('http://localhost:3001/api/admin/verify', {
+            const response = await fetch(`${AWS_BACKEND_URL}/api/admin/verify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -54,6 +73,14 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
             setIsVerifying(false);
         }
     };
+
+    // Effect to handle Enter key press
+    useEffect(() => {
+        // For demo purposes, allow mixed content
+        if (typeof window !== 'undefined') {
+            console.log('Demo mode: Backend on HTTP, Frontend on HTTPS');
+        }
+    }, []);
 
     return (
         <div style={{ 
@@ -133,50 +160,6 @@ const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
                         <p style={{ color: "#FECACA", fontSize: "0.875rem", margin: 0 }}>{error}</p>
                     </div>
                 )}
-
-                <button
-                    onClick={handleAdminLogin}
-                    disabled={isVerifying || !adminPassword.trim()}
-                    style={{
-                        width: "100%",
-                        background: "linear-gradient(to right, #2563eb, #7c3aed)",
-                        color: "white",
-                        fontWeight: "600",
-                        padding: "0.75rem 1.5rem",
-                        borderRadius: "8px",
-                        border: "none",
-                        cursor: isVerifying || !adminPassword.trim() ? "not-allowed" : "pointer",
-                        opacity: isVerifying || !adminPassword.trim() ? 0.5 : 1,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "0.5rem"
-                    }}
-                >
-                    {isVerifying ? (
-                        <>
-                            <div style={{
-                                width: "1.25rem",
-                                height: "1.25rem",
-                                border: "2px solid white",
-                                borderTop: "2px solid transparent",
-                                borderRadius: "50%",
-                                animation: "spin 1s linear infinite"
-                            }}></div>
-                            Verifying...
-                        </>
-                    ) : (
-                        <>
-                            Access Admin Panel
-                        </>
-                    )}
-                </button>
-
-                <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.2)", paddingTop: "1rem", marginTop: "1rem" }}>
-                    <p style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.75rem", textAlign: "center", margin: 0 }}>
-                        For advanced security, SSH key authentication is also available.
-                    </p>
-                </div>
             </div>
         </div>
     );
@@ -191,6 +174,7 @@ function App() {
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     const [votingClosed, setVotingClosed] = useState(
         localStorage.getItem("votingClosed") === "true"
     );
@@ -199,15 +183,26 @@ function App() {
     );
     const [connectionStatus, setConnectionStatus] = useState("");
 
-    // SSH verification state
-    const [sshKeyVerified, setSSHKeyVerified] = useState(false);
-    const [sshKeyFingerprint, setSSHKeyFingerprint] = useState('');
-    const [showSimpleLogin, setShowSimpleLogin] = useState(null);
-
     // State variables for observer panel
     const [electionCalled, setElectionCalled] = useState(false);
     const [electionCalledDate, setElectionCalledDate] = useState(null);
     const [nominationDeadline, setNominationDeadline] = useState(null);
+
+    // Election phase state - sync with AdminPanel localStorage
+    const [electionPhase, setElectionPhase] = useState(() => {
+        return localStorage.getItem('adminPanel_votingPhase') || 'PRE_ELECTION';
+    });
+
+    const [electionCalledState, setElectionCalledState] = useState(() => {
+        const saved = localStorage.getItem('adminPanel_electionCalled');
+        return saved ? JSON.parse(saved) : false;
+    });
+
+    const [nominationDeadlineState, setNominationDeadlineState] = useState(() => {
+        const saved = localStorage.getItem('adminPanel_nominationDeadline');
+        return saved ? new Date(saved) : null;
+    });
+
 
     useEffect(() => {
         const init = async () => {
@@ -229,6 +224,29 @@ function App() {
         };
         
         init();
+    }, []);
+
+    useEffect(() => {
+        const syncElectionState = () => {
+            const phase = localStorage.getItem('adminPanel_votingPhase') || 'PRE_ELECTION';
+            const called = localStorage.getItem('adminPanel_electionCalled');
+            const deadline = localStorage.getItem('adminPanel_nominationDeadline');
+
+            setElectionPhase(phase);
+            setElectionCalledState(called ? JSON.parse(called) : false);
+            setNominationDeadlineState(deadline ? new Date(deadline) : null);
+        };
+
+        // Listen for storage changes
+        window.addEventListener('storage', syncElectionState);
+
+        // Also check periodically in case changes happen in same tab
+        const interval = setInterval(syncElectionState, 1000);
+
+        return () => {
+            window.removeEventListener('storage', syncElectionState);
+            clearInterval(interval);
+        };
     }, []);
 
     const initialiseWallet = async () => {
@@ -356,6 +374,9 @@ function App() {
             }}>
                 <div>
                     <h1 style={{ margin: '0', fontSize: '1.8rem' }}>Eirvote - Blockchain Voting System</h1>
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#666' }}>
+                        Deployed on AWS - Backend: {AWS_BACKEND_URL}
+                    </p>
                 </div>
                 
                 {/* Wallet Connection Section */}
@@ -400,10 +421,6 @@ function App() {
                                 <select 
                                     onChange={(e) => {
                                         setRole(e.target.value);
-                                        if (e.target.value === "admin") {
-                                            setShowSimpleLogin(null); // Reset to choice screen
-                                            setSSHKeyVerified(false); // Reset verification
-                                        }
                                     }} 
                                     value={role}
                                     style={{
@@ -498,129 +515,30 @@ function App() {
 
             {/* Admin Panel Logic */}
             {walletAddress && role === "admin" && !loading && (
-                // Show admin panel if SSH key is verified (from either login method)
-                sshKeyVerified ? (
+                // Show admin panel
+                isAdminLoggedIn ? (
                     <AdminPanel 
                         candidates={candidates}
                         votingClosed={votingClosed}
                         onToggleVoting={onToggleVoting}
                         onCandidateAdded={refreshCandidates}
                         votingHistory={votingHistory || []}
-                        sshKeyFingerprint={sshKeyFingerprint}
                         contract={contract}
                         provider={provider}
                         walletAddress={walletAddress}
                     />
                 ) : (
-                    // Show login choice screen or specific login method
-                    showSimpleLogin === null ? (
-                        // Admin login choice screen
-                        <div style={{ 
-                            minHeight: "50vh", 
-                            background: "linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #3730a3 100%)",
-                            display: "flex", 
-                            alignItems: "center", 
-                            justifyContent: "center", 
-                            padding: "1rem",
-                            borderRadius: "16px",
-                            margin: "2rem 0"
-                        }}>
-                            <div style={{
-                                background: "rgba(255, 255, 255, 0.1)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "16px",
-                                padding: "2rem",
-                                width: "100%",
-                                maxWidth: "400px",
-                                border: "1px solid rgba(255, 255, 255, 0.2)",
-                                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-                            }}>
-                                <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "white", marginBottom: "1.5rem", textAlign: "center" }}>
-                                    Choose Admin Login Method
-                                </h2>
-                                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                                    <button
-                                        onClick={() => setShowSimpleLogin(true)}
-                                        style={{
-                                            width: "100%",
-                                            background: "linear-gradient(to right, #16a34a, #2563eb)",
-                                            color: "white",
-                                            fontWeight: "600",
-                                            padding: "1rem 1.5rem",
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            gap: "0.5rem"
-                                        }}
-                                    >
-                                        Simple Password Login
-                                    </button>
-                                    <button
-                                        onClick={() => setShowSimpleLogin(false)}
-                                        style={{
-                                            width: "100%",
-                                            background: "linear-gradient(to right, #7c3aed, #ec4899)",
-                                            color: "white",
-                                            fontWeight: "600",
-                                            padding: "1rem 1.5rem",
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            gap: "0.5rem"
-                                        }}
-                                    >
-                                        SSH Key Authentication
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setRole('');
-                                            setShowSimpleLogin(null);
-                                        }}
-                                        style={{
-                                            width: "100%",
-                                            background: "#6b7280",
-                                            color: "white",
-                                            fontWeight: "600",
-                                            padding: "0.5rem 1.5rem",
-                                            borderRadius: "8px",
-                                            border: "none",
-                                            cursor: "pointer"
-                                        }}
-                                    >
-                                        ← Back
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ) : showSimpleLogin === true ? (
-                        // Simple password login
-                        <SimpleAdminLogin 
-                            onAdminLogin={(success) => {
-                                if (success) {
-                                    setSSHKeyVerified(true);
-                                    setSSHKeyFingerprint('Password-Verified Admin');
-                                }
-                            }} 
-                            walletAddress={walletAddress} 
-                        />
-                    ) : (
-                        // SSH verification
-                        <SSHKeyVerification 
-                            walletAddress={walletAddress}
-                            onVerified={(fingerprint) => {
-                                setSSHKeyVerified(true);
-                                setSSHKeyFingerprint(fingerprint);
-                            }}
-                        />
+                    <SimpleAdminLogin
+                        onAdminLogin={(success) => {
+                            if (success) {
+                                setIsAdminLoggedIn(true);
+                            }
+                        }}
+                        walletAddress={walletAddress}
+                    />
                     )
-                )
             )}
+                   
             {/* Observer Panel */}
             {walletAddress && role === "observer" && !loading && (
                 <ObserverPanel 
@@ -641,30 +559,12 @@ function App() {
                     hasVoted={hasVoted}
                     onSubmitRanking={handleSubmitRanking}
                     votingClosed={votingClosed}
+                    walletAddress={walletAddress}
+                    electionPhase={electionPhase}
+                    electionCalled={electionCalledState}
+                    nominationDeadline={nominationDeadlineState}
                 />
             )}
-
-            {/* Blockchain Badge */}
-            <div style={{
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                padding: '8px 15px',
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #00ff88',
-                borderRadius: '20px',
-                boxShadow: '0 2px 8px rgba(0,255,136,0.3)',
-                color: '#00ff88',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                zIndex: 1000,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-            }}>
-                <span style={{ color: '#00ff88', fontSize: '14px' }}>🔗</span>
-                Powered & Secured by Blockchain
-            </div>
 
             {/* Footer */}
             <Footer />

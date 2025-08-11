@@ -8,7 +8,6 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
         return (
             <div style={{ padding: '2rem', textAlign: 'center' }}>
                 <h3>Ready to Run PR-STV Simulation</h3>
-                <p>Click "Run PR-STV Simulation" to see the Irish counting system in action!</p>
             </div>
         );
     }

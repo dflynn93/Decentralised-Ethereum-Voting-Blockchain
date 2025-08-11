@@ -1,9 +1,8 @@
 import React, { useState, useEffect} from "react";
 import DigitalBallot from "../src/DigitalBallot";
 import { commitVoteWithZKP, revealVoteWithZKP, demonstrateZKP } from "../src/zkp/voteValidityZKP";
-import "./VoterPanel.css";
 
-const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingClosed, walletAddress }) => {
+const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingClosed, walletAddress, electionPhase = 'PRE_ELECTION', electionCalled = false, nominationDeadline= null }) => {
     const [rankings, setRankings] = useState({});
     const [message, setMessage] = useState("");
     const [success, setSuccess] = useState(null);
@@ -146,6 +145,107 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
             setTimeout(() => { setZkpStatus(''); }, 3000);
         }
     };
+
+    if (!electionCalled || electionPhase === 'PRE_ELECTION') {
+        return (
+            <div style={{ marginTop: "2rem" }}>
+                <h2>Voter Panel</h2>
+                <div style={{
+                    padding: "2rem",
+                    border: "2px solid #6c757d",
+                    backgroundColor: "#f8f9fa",
+                    borderRadius: "8px",
+                    textAlign: "center"
+                }}>
+                    <h3 style={{ color: "#6c757d", margin: "0 0 1rem 0", fontSize: "1.5rem" }}>
+                        No Election Currently Active
+                    </h3>
+                    <div style={{ color: "#666", fontSize: "1.1rem", lineHeight: "1.6" }}>
+                        <p style={{ margin: "0 0 1rem 0" }}>
+                            There is no active election at this time.
+                        </p>
+                        <p style={{ margin: "0 0 1rem 0" }}>
+                            Elections must be officially called by the Electoral Commission before voting can begin.
+                        </p>
+                        <p style={{ margin: "0", fontSize: "1rem" }}>
+                            Please check back later or contact the Electoral Commission for more information.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Show ballot preview in disabled state */}
+                <DigitalBallot
+                    candidates={candidates}
+                    rankings={{}}
+                    onRankingChange={() => {}}
+                    onSubmit={() => {}}
+                    hasVoted={false}
+                    votingClosed={true} // Force closed state
+                    isPreviewMode={true} // Force preview mode
+                    isRankingSystem={true}
+                />
+            </div>
+        );
+    }
+
+    // Check if we're in nomination phase
+    if (electionPhase === 'NOMINATION') {
+        const isNominationActive = nominationDeadline && new Date() < nominationDeadline;
+        return (
+            <div style={{ marginTop: "2rem"}}>
+                <h2>Voter Panel</h2>
+                <div style={{
+                    padding: "2rem",
+                    border: "2px solid #ffc107",
+                    backgroundColor: "#fff3cd",
+                    borderRadius: "8px",
+                    textAlign: "center"
+                }}>
+                    <h3 style={{ color: "#856404", margin: "0 0 1rem 0", fontSize: "1.5rem" }}>
+                        Election Called - Nomination Period
+                    </h3>
+                    <div style={{ color: "#856404", fontSize: "1.1rem", lineHeight: "1.6" }}>
+                        <p style={{ margin: "0 0 1rem 0" }}>
+                            An election has been called for BallyBeg, Co. Donegal.
+                        </p>
+                        <p style={{ margin: "0 0 1rem 0" }}>
+                            Candidates are currently submitting their nominations to contest the election.
+                        </p>
+                        {nominationDeadline && (
+                            <p style={{ margin: "0 0 1rem 0" }}>
+                                <strong>Nomination deadline:</strong> {nominationDeadline.toLocaleString()}
+                            </p>
+                        )}
+                        <p style={{ margin: "0" }}>
+                            Voting will open once the nomination period ends and candidates are confirmed.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Show current candidates */}
+                {candidates.length > 0 && (
+                    <div style={{ marginTop: "2rem" }}>
+                        <h4>Candidates Registered So Far:</h4>
+                        <div style={{
+                            padding: "1rem",
+                            backgroundColor: "#f8f9fa",
+                            border: "1px solid #dee2e6",
+                            borderRadius: "4px"
+                        }}>
+                            <ul style={{ margin: "0", paddingLeft: "1.5rem" }}>
+                                {candidates.map(candidate => (
+                                    <li key={candidate.id} style={{ marginBottom: "0.5rem" }}>
+                                        <strong>{candidate.name}</strong> ({candidate.party || 'Independent'})
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+            
 
     if (votingClosed) {
         return (

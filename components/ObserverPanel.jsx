@@ -5,7 +5,6 @@ import "./ObserverPanel.css";
 
 const observerAccounts = {
     201: 'obs1',
-    202: 'obs2'
 };
 
 function ObserverPanel({ candidates = [], votingClosed = false, contract, provider, electionCalled = false, electionCalledDate = null, nominationDeadline = null, votingHistory = []}) {
@@ -21,20 +20,11 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
     const [eventStats, setEventStats] = useState(null);
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [eventFilter, setEventFilter] = useState('ALL');
-    const [searchTerm, setSearchTerm] = useState('');
 
-    // Real-time clock
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
-
-    // Update current time every second
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
+    // Audit node state 
+    const [isRunningAudit, setIsRunningAudit] = useState(false);
+    const [nodeStatus, setNodeStatus] = useState('offline');
+    const [auditResults, setAuditResults] = useState([]);
 
     // Initialise event monitoring when logged in
     useEffect(() => {
@@ -49,249 +39,42 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
         };
     }, [isLoggedIn, contract, provider, isMonitoring]);
 
-    // Filter events based on selected filter and search term
-    useEffect(() => {
-        let events = auditEvents;
-
-        // Apply type filter
-        if (eventFilter !== 'ALL') {
-            events = events.filter(event => event.type === eventFilter);
-        }
-
-        // Apply search filter
-        if (searchTerm) {
-            const searchLower = searchTerm.toLowerCase();
-            events = events.filter(event => {
-                const formatted = legacyEventMonitor.formatEventForDisplay(event);
-                return formatted.title.toLowerCase().includes(searchLower) ||
-                       formatted.description.toLowerCase().includes(searchLower) ||
-                       (formatted.actor && formatted.actor.toLowerCase().includes(searchLower));
-            });
-        }
-
-        setFilteredEvents(events);
-    }, [auditEvents, eventFilter, searchTerm]);
-
-    // Independent Audit Node Functions
+    // Audit Functions
     const runIndependentAudit = async () => {
-        if (!contract || !provider) {
-            alert('Contract not available for audit');
-            return;
-        }
-
         setIsRunningAudit(true);
-        setNodeStatus('running');
-
+        
         try {
-            console.log("Starting Independent Audit for BallyBeg...");
+            console.log("Running basic audit check...");
             
-            const auditChecks = await performAuditChecks();
-            setAuditResults(auditChecks);
+            // Checks
+            const checks = [];
             
-            const score = calculateVerificationScore(auditChecks);
-            setVerificationScore(score);
-            setNodeStatus(score >= 95 ? 'verified' : 'issues_found');
-
-            console.log("Independent Audit Complete:", auditChecks);
-
+            // Candidate count check
+            const candidateCheck = candidates.length > 0 ? 'PASS' : 'FAIL';
+            checks.push({
+                name: 'Candidate Count',
+                status: candidateCheck,
+                info: `${candidates.length} candidates found`
+            });
+            
+            // Event count check  
+            const eventCheck = auditEvents.length > 0 ? 'PASS' : 'FAIL';
+            checks.push({
+                name: 'Event Monitoring',
+                status: eventCheck,
+                info: `${auditEvents.length} events recorded`
+            });
+            
+            setAuditResults(checks);
+            setNodeStatus('completed');
+            
         } catch (error) {
-            console.error('Independent audit failed:', error);
+            console.error('Audit failed:', error);
             setNodeStatus('error');
-            setVerificationScore(0);
         } finally {
             setIsRunningAudit(false);
         }
     };
-
-      const performAuditChecks = async () => {
-        const checks = [];
-
-        // 1. Verify vote totals consistency
-        try {
-            const blockchainTotal = totalVotes;
-            const eventTotal = auditEvents.filter(e => e.type === 'VOTE_REVEALED').length;
-            
-            checks.push({
-                type: 'VOTE_TOTALS',
-                status: blockchainTotal === eventTotal ? 'PASS' : 'FAIL',
-                details: {
-                    blockchainTotal,
-                    eventTotal,
-                    match: blockchainTotal === eventTotal
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            checks.push({
-                type: 'VOTE_TOTALS',
-                status: 'ERROR',
-                details: { error: error.message },
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        // 2. Check for double voting
-        try {
-            const voteEvents = auditEvents.filter(e => e.type === 'VOTE_COMMITTED');
-            const voterAddresses = voteEvents.map(e => e.data?.voter).filter(Boolean);
-            const uniqueVoters = [...new Set(voterAddresses)];
-            
-            checks.push({
-                type: 'DOUBLE_VOTING',
-                status: voterAddresses.length === uniqueVoters.length ? 'PASS' : 'FAIL',
-                details: {
-                    totalVotes: voterAddresses.length,
-                    uniqueVoters: uniqueVoters.length,
-                    duplicatesFound: voterAddresses.length - uniqueVoters.length
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            checks.push({
-                type: 'DOUBLE_VOTING',
-                status: 'ERROR',
-                details: { error: error.message },
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        // 3. Verify candidate registration integrity
-        try {
-            const candidateEvents = auditEvents.filter(e => e.type === 'CANDIDATE_ADDED');
-            const registeredCandidates = candidateEvents.length;
-            const currentCandidates = candidates.length;
-            
-            checks.push({
-                type: 'CANDIDATE_INTEGRITY',
-                status: registeredCandidates === currentCandidates ? 'PASS' : 'FAIL',
-                details: {
-                    registeredCandidates,
-                    currentCandidates,
-                    match: registeredCandidates === currentCandidates
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            checks.push({
-                type: 'CANDIDATE_INTEGRITY',
-                status: 'ERROR',
-                details: { error: error.message },
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        // 4. Verify system timing constraints
-        try {
-            const adminEvents = auditEvents.filter(e => e.type === 'ADMIN_ACTION');
-            const validTimingEvents = adminEvents.filter(e => {
-                // Check if admin actions happened during valid periods
-                return true; // Simplified for demo
-            });
-            
-            checks.push({
-                type: 'TIMING_CONSTRAINTS',
-                status: 'PASS',
-                details: {
-                    totalAdminEvents: adminEvents.length,
-                    validTimingEvents: validTimingEvents.length,
-                    complianceRate: adminEvents.length > 0 ? (validTimingEvents.length / adminEvents.length) * 100 : 100
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            checks.push({
-                type: 'TIMING_CONSTRAINTS',
-                status: 'ERROR',
-                details: { error: error.message },
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        // 5. Verify blockchain consistency
-        try {
-            const totalEvents = auditEvents.length;
-            const validEvents = auditEvents.filter(e => e.id && e.timestamp && e.type).length;
-            
-            checks.push({
-                type: 'BLOCKCHAIN_CONSISTENCY',
-                status: totalEvents === validEvents ? 'PASS' : 'FAIL',
-                details: {
-                    totalEvents,
-                    validEvents,
-                    consistencyRate: totalEvents > 0 ? (validEvents / totalEvents) * 100 : 100
-                },
-                timestamp: new Date().toISOString()
-            });
-        } catch (error) {
-            checks.push({
-                type: 'BLOCKCHAIN_CONSISTENCY',
-                status: 'ERROR',
-                details: { error: error.message },
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        return checks;
-    };
-
-    const calculateVerificationScore = (checks) => {
-        if (checks.length === 0) return 0;
-        const passedChecks = checks.filter(check => check.status === 'PASS').length;
-        return Math.round((passedChecks / checks.length) * 100);
-    };
-
-    const exportIndependentAuditReport = () => {
-        const report = {
-            auditId: `independent-audit-${Date.now()}`,
-            timestamp: new Date().toISOString(),
-            constituency: 'BallyBeg, Co. Donegal',
-            auditorId: observerId,
-            verificationScore,
-            nodeStatus,
-            auditResults,
-            summary: {
-                totalChecks: auditResults.length,
-                passedChecks: auditResults.filter(r => r.status === 'PASS').length,
-                failedChecks: auditResults.filter(r => r.status === 'FAIL').length,
-                errorChecks: auditResults.filter(r => r.status === 'ERROR').length,
-                overallStatus: verificationScore >= 95 ? 'VERIFIED' : verificationScore >= 80 ? 'ISSUES_DETECTED' : 'REQUIRES_INVESTIGATION'
-            },
-            metadata: {
-                electionCalled,
-                votingClosed,
-                totalVotes,
-                totalCandidates: candidates.length,
-                totalAuditEvents: auditEvents.length
-            }
-        };
-
-        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ballybeg-independent-audit-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
-
-    const getNodeStatusInfo = () => {
-        switch (nodeStatus) {
-            case 'verified':
-                return { color: '#4caf50', text: 'VERIFIED', bg: '#e8f5e9' };
-            case 'issues_found':
-                return { color: '#ff9800', text: 'ISSUES DETECTED', bg: '#fff3e0' };
-            case 'running':
-                return { color: '#2196f3', text: 'RUNNING AUDIT', bg: '#e3f2fd' };
-            case 'error':
-                return { color: '#f44336', text: 'ERROR', bg: '#ffebee' };
-            default:
-                return { color: '#6c757d', text: 'OFFLINE', bg: '#f8f9fa' };
-        }
-    };
-
-
 
     const initialiseEventMonitoring = async () => {
         try {
@@ -340,25 +123,6 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
         }
     };
 
-   const exportAuditTrail = () => {
-        try {
-            const auditData = legacyEventMonitor.exportAuditTrail();
-            const blob = new Blob([JSON.stringify(auditData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ballybeg-election-audit-trail-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error("Error exporting audit trail:", error);
-            alert("Error exporting audit trail. Please try again.");
-        }
-    };
-
-
     const getEventTypeStats = () => {
         const stats = {};
         auditEvents.forEach(event => {
@@ -389,7 +153,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
         };
     };
 
-    // Election Status COmponent
+    // Election Status Component
     const getElectionStatus = () => {
         if (!electionCalled) {
             return {
@@ -529,8 +293,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                     </button>
                     <div className="test-credentials">
                         <strong>Test Credentials</strong><br/>
-                        ID: 201, PIN: obs1<br/>
-                        ID: 202, PIN: obs2
+                        ID: 201, PIN: obs1
                     </div>
                 </div>
             </div>
@@ -544,11 +307,6 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
         return (
         <div className="observer-panel">
             <h2>Observer Panel - BallyBeg, Co. Donegal</h2>
-
-            {/* Real-time Clock */}
-            <div className="real-time-clock">
-                <h4>Current Time: {currentTime.toLocaleString()}</h4>
-            </div>
 
             {/* Election Status */}
             <div className="election-status" style={{
@@ -634,8 +392,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                 {[
                     { id: 'overview', label: 'Overview', color: '#0056b3' },
                     { id: 'live-audit', label: 'Live Audit Trail', color: '#dc3545' },
-                    { id: 'analytics', label: 'Analytics', color: '#28a745' },
-                    { id: 'candidates', label: 'Candidates', color: '#6f42c1' },
+                    { id: 'audit-node', label: 'Basic Audit', color: '#e91e63' },
                     { id: 'ballot', label: 'Ballot Preview', color: '#fd7e14' }
                 ].map(tab => (
                     <button
@@ -668,7 +425,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                             </div>
                             <div>
                                 <strong>Total Votes:</strong>
-                                <p>{votingClosed ? totalVotes : "Hidden During Election"}</p>
+                                <p>{votingClosed ? candidates.reduce((sum, c) => sum + (c.votes || 0), 0) : "Hidden During Election"}</p>
                             </div>
                             <div>
                                 <strong>Candidates:</strong>
@@ -709,22 +466,11 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                             </div>
                         </div>
                     </div>
-
-                    {/* Export Controls */}
-                    <div className="export-panel">
-                        <h3>Audit Trail Export</h3>
-                        <p>
-                            Export complete immutable audit trail for regulatory compliance and forensic analysis.
-                        </p>
-                        <button onClick={exportAuditTrail} className="export-button">
-                            Export Complete Audit Trail
-                        </button>
-                    </div>
                 </div>
             )}
 
             {/* Live Audit Trail Tab */}
-              {activeTab === 'live-audit' && (
+            {activeTab === 'live-audit' && (
                 <div className="tab-content">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                         <h3 style={{ margin: '0' }}>Live Audit Trail - BallyBeg</h3>
@@ -750,15 +496,6 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                                 <option value="VOTE_REVEALED">Vote Reveals</option>
                                 <option value="SYSTEM_AUDIT">System Audits</option>
                             </select>
-                        </div>
-                        <div>
-                            <label>Search:</label>
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search events..."
-                            />
                         </div>
                     </div>
 
@@ -807,323 +544,44 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                 </div>
             )}
             
-             {/* Independent Audit Node Tab */}
+            {/* Basic Audit Tab */}
             {activeTab === 'audit-node' && (
                 <div className="tab-content">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <h3 style={{ margin: 0, color: '#e91e63' }}>Independent Audit Node</h3>
-                        <div style={{
-                            padding: '0.5rem 1rem',
-                            borderRadius: '4px',
-                            fontWeight: 'bold',
-                            backgroundColor: getNodeStatusInfo().bg,
-                            color: getNodeStatusInfo().color,
-                            border: `1px solid ${getNodeStatusInfo().color}`
-                        }}>
-                            {getNodeStatusInfo().text}
-                        </div>
-                    </div>
-
-                    {/* Audit Node Status */}
-                    <div style={{
-                        padding: '1.5rem',
-                        backgroundColor: getNodeStatusInfo().bg,
-                        border: `2px solid ${getNodeStatusInfo().color}`,
-                        borderRadius: '8px',
-                        marginBottom: '2rem'
-                    }}>
-                        <h4 style={{ margin: '0 0 1rem 0', color: getNodeStatusInfo().color }}>
-                            BallyBeg Election Verification Status
-                        </h4>
+                    <h3>Basic Audit Check</h3>
+                    
+                    <div style={{ padding: '1rem', border: '1px solid #ccc', marginBottom: '1rem' }}>
+                        <h4>Audit Status: {nodeStatus}</h4>
+                        <p>Run basic checks on the election data</p>
                         
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '1rem',
-                            marginBottom: '1.5rem'
-                        }}>
-                            <div>
-                                <strong>Node Status:</strong>
-                                <p style={{ margin: '0.25rem 0 0 0', color: getNodeStatusInfo().color, fontWeight: 'bold' }}>
-                                    {getNodeStatusInfo().text}
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <strong>Verification Score:</strong>
-                                <p style={{
-                                    margin: '0.25rem 0 0 0',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold',
-                                    color: verificationScore >= 95 ? '#4caf50' : verificationScore >= 80 ? '#ff9800' : '#f44336'
-                                }}>
-                                    {verificationScore}%
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <strong>Total Checks:</strong>
-                                <p style={{ margin: '0.25rem 0 0 0', fontWeight: 'bold' }}>
-                                    {auditResults.length}
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <strong>Last Audit:</strong>
-                                <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
-                                    {auditResults.length > 0 ? new Date(auditResults[0].timestamp).toLocaleString() : 'Never'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            <button
-                                onClick={runIndependentAudit}
-                                disabled={isRunningAudit || !contract}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    backgroundColor: '#e91e63',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: isRunningAudit || !contract ? 'not-allowed' : 'pointer',
-                                    opacity: isRunningAudit || !contract ? 0.6 : 1,
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {isRunningAudit ? 'Running Independent Audit...' : 'Run Independent Verification'}
-                            </button>
-                            
-                            {auditResults.length > 0 && (
-                                <button
-                                    onClick={exportIndependentAuditReport}
-                                    style={{
-                                        padding: '0.75rem 1.5rem',
-                                        backgroundColor: '#2196f3',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    Export Audit Report
-                                </button>
-                            )}
-                        </div>
+                        <button
+                            onClick={runIndependentAudit}
+                            disabled={isRunningAudit}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                backgroundColor: isRunningAudit ? '#ccc' : '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                cursor: isRunningAudit ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isRunningAudit ? 'Running...' : 'Run Basic Audit'}
+                        </button>
                     </div>
 
-                     {/* Verification Results */}
+                    {/* Results */}
                     {auditResults.length > 0 && (
-                        <div style={{
-                            backgroundColor: 'white',
-                            padding: '1.5rem',
-                            borderRadius: '8px',
-                            border: '1px solid #dee2e6',
-                            marginBottom: '2rem'
-                        }}>
-                            <h4 style={{ margin: '0 0 1rem 0', color: '#333' }}>Independent Verification Results</h4>
-                            <div style={{ display: 'grid', gap: '0.75rem' }}>
-                                {auditResults.map((result, index) => (
-                                    <div key={index} style={{
-                                        padding: '1rem',
-                                        backgroundColor: result.status === 'PASS' ? '#e8f5e9' : 
-                                                       result.status === 'FAIL' ? '#ffebee' : '#fff3e0',
-                                        border: `1px solid ${result.status === 'PASS' ? '#4caf50' : 
-                                                            result.status === 'FAIL' ? '#f44336' : '#ff9800'}`,
-                                        borderRadius: '4px'
-                                    }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                            <span style={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                                                {result.type.replace(/_/g, ' ')}
-                                            </span>
-                                            <span style={{
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '4px',
-                                                fontSize: '0.8rem',
-                                                fontWeight: 'bold',
-                                                backgroundColor: result.status === 'PASS' ? '#4caf50' : 
-                                                               result.status === 'FAIL' ? '#f44336' : '#ff9800',
-                                                color: 'white'
-                                            }}>
-                                                {result.status}
-                                            </span>
-                                        </div>
-                                        
-                                        {/* Result Details */}
-                                        <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                                            {result.status === 'PASS' && result.type === 'VOTE_TOTALS' && (
-                                                <p style={{ margin: 0 }}>
-                                                    Vote totals verified: {result.details.blockchainTotal} blockchain votes match {result.details.eventTotal} event logs
-                                                </p>
-                                            )}
-                                            {result.status === 'PASS' && result.type === 'DOUBLE_VOTING' && (
-                                                <p style={{ margin: 0 }}>
-                                                    No double voting detected: {result.details.uniqueVoters} unique voters from {result.details.totalVotes} votes
-                                                </p>
-                                            )}
-                                            {result.status === 'PASS' && result.type === 'CANDIDATE_INTEGRITY' && (
-                                                <p style={{ margin: 0 }}>
-                                                    Candidate integrity verified: {result.details.currentCandidates} candidates match registration records
-                                                </p>
-                                            )}
-                                            {result.status === 'PASS' && result.type === 'TIMING_CONSTRAINTS' && (
-                                                <p style={{ margin: 0 }}>
-                                                    Timing constraints verified: {result.details.complianceRate}% compliance rate
-                                                </p>
-                                            )}
-                                            {result.status === 'PASS' && result.type === 'BLOCKCHAIN_CONSISTENCY' && (
-                                                <p style={{ margin: 0 }}>
-                                                    Blockchain consistency verified: {result.details.consistencyRate}% data integrity
-                                                </p>
-                                            )}
-                                            
-                                            {result.status === 'FAIL' && (
-                                                <p style={{ margin: 0, color: '#d32f2f', fontWeight: 'bold' }}>
-                                                    Verification failed - Details: {JSON.stringify(result.details, null, 2)}
-                                                </p>
-                                            )}
-                                            
-                                            {result.status === 'ERROR' && (
-                                                <p style={{ margin: 0, color: '#f57c00', fontWeight: 'bold' }}>
-                                                    Check failed due to error: {result.details.error}
-                                                </p>
-                                            )}
-                                        </div>
-                                        
-                                        <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.5rem' }}>
-                                            Verified at: {new Date(result.timestamp).toLocaleString()}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Audit Guidelines */}
-                    <div style={{
-                        backgroundColor: '#f8f9fa',
-                        padding: '1.5rem',
-                        borderRadius: '8px',
-                        border: '1px solid #dee2e6'
-                    }}>
-                        <h4 style={{ margin: '0 0 1rem 0', color: '#333' }}>Independent Audit Guidelines</h4>
-                        <div style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.6' }}>
-                            <p><strong>Purpose:</strong> This independent audit node verifies the integrity of the BallyBeg election by cross-referencing multiple data sources and checking compliance with Irish electoral law.</p>
-                            
-                            <p><strong>Verification Checks:</strong></p>
-                            <ul style={{ marginLeft: '1.5rem' }}>
-                                <li><strong>Vote Totals:</strong> Ensures blockchain vote counts match event logs</li>
-                                <li><strong>Double Voting:</strong> Verifies no voter has cast multiple ballots</li>
-                                <li><strong>Candidate Integrity:</strong> Confirms candidate registration consistency</li>
-                                <li><strong>Timing Constraints:</strong> Validates all actions occurred within legal timeframes</li>
-                                <li><strong>Blockchain Consistency:</strong> Checks data integrity across all records</li>
-                            </ul>
-                            
-                            <p><strong>Scoring:</strong></p>
-                            <ul style={{ marginLeft: '1.5rem' }}>
-                                <li><span style={{color: '#4caf50', fontWeight: 'bold'}}>95-100%:</span> Election fully verified and compliant</li>
-                                <li><span style={{color: '#ff9800', fontWeight: 'bold'}}>80-94%:</span> Minor issues detected, requires review</li>
-                                <li><span style={{color: '#f44336', fontWeight: 'bold'}}>Below 80%:</span> Significant issues require investigation</li>
-                            </ul>
-                            
-                            <p><strong>Legal Authority:</strong> This audit is conducted under the observer provisions of the Electoral Act 1992-2019 for the BallyBeg constituency.</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
-            {/* Analytics Tab */}
-            {activeTab === 'analytics' && (
-                <div className="tab-content">
-                    <h3>BallyBeg Election Analytics</h3>
-
-                    {/* Event Type Distribution */}
-                    <div className="event-type-distribution">
-                        <h4>Event Type Distribution</h4>
-                        <div className="event-type-grid">
-                            {Object.entries(eventTypeStats).map(([type, count]) => (
-                                <div key={type} className="event-type-card">
-                                    <div className="event-type-count">
-                                        {count}
-                                    </div>
-                                    <div className="event-type-label">
-                                        {type.replace(/_/g, ' ')}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Election Timeline */}
-                    <div className="election-timeline">
-                        <h4>BallyBeg Election Timeline</h4>
-                        <div className="timeline-container">
-                            {legacyEventMonitor.getElectionTimeline().length === 0 ? (
-                                <div style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
-                                    No timeline events recorded yet.
-                                </div>
-                            ) : (
-                                legacyEventMonitor.getElectionTimeline().map((event, index) => {
-                                    const formatted = legacyEventMonitor.formatEventForDisplay(event);
-                                    return (
-                                        <div key={event.id} className="timeline-event">
-                                            <div className="timeline-event-title">
-                                                {formatted.title}
-                                            </div>
-                                            <div className="timeline-event-time">
-                                                {formatted.timestamp}
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Candidates Tab */}
-            {activeTab === 'candidates' && (
-                <div className="tab-content">
-                    <h3>Candidate Information - BallyBeg, Co. Donegal</h3>
-                    <p className="ballot-preview-note">
-                        Real-time candidate registration data from blockchain events.
-                    </p>
-                    {legacyEventMonitor.getEventsByType('CANDIDATE_ADDED').length === 0 ? (
-                        <div className="candidates-empty">
-                            No candidates have been registered yet for BallyBeg constituency.
-                        </div>
-                    ) : (
-                        <div className="candidates-container">
-                            {legacyEventMonitor.getEventsByType('CANDIDATE_ADDED').map((event, index) => (
-                                <div key={event.id} className="candidate-item">
-                                    <div className="candidate-header">
-                                        <div>
-                                            <h4 className="candidate-name">
-                                                {event.data.name}
-                                            </h4>
-                                            <p className="candidate-party">
-                                                <strong>Party:</strong> {event.data.party || 'Independent'}
-                                            </p>
-                                        </div>
-                                        <div className="candidate-metadata">
-                                            <div>Added: {new Date(event.data.timestamp * 1000).toLocaleString()}</div>
-                                            <div>By: {event.data.addedBy ? event.data.addedBy.slice(0, 8) + '...' + event.data.addedBy.slice(-4) : 'Unknown'}</div>
-                                            <div style={{ marginTop: '0.25rem' }}>
-                                                <small>Block: {event.blockNumber}</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="candidate-votes">
-                                        Current votes: <strong>
-                                            {votingClosed ? 
-                                                (candidates.find(c => c.name === event.data.name) ? candidates.find(c => c.name === event.data.name).votes : 0) : 
-                                                "Hidden during election"
-                                            }
-                                        </strong>
-                                    </div>
+                        <div style={{ padding: '1rem', border: '1px solid #ccc' }}>
+                            <h4>Audit Results</h4>
+                            {auditResults.map((result, index) => (
+                                <div key={index} style={{ 
+                                    padding: '0.5rem', 
+                                    margin: '0.5rem 0',
+                                    backgroundColor: result.status === 'PASS' ? '#d4edda' : '#f8d7da',
+                                    border: '1px solid #ccc'
+                                }}>
+                                    <strong>{result.name}:</strong> {result.status}
+                                    <br />
+                                    <small>{result.info}</small>
                                 </div>
                             ))}
                         </div>

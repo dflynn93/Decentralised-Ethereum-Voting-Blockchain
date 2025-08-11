@@ -8,38 +8,53 @@
     margin-bottom: 1rem;
 }
 
-/* SSH Verification */
-.ssh-verification {
-    padding: 0.5rem 1rem;
-    background-color: #e8f5e9;
-    border: 1px solid #4caf50;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+/* Admin Login Styles */
+.admin-login-container {
+    background: linear-gradient(135deg, #0056b3 0%, #003d82 50%, #002a5c 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-.ssh-verification strong {
-    color: #2e7d32;
-}
-
-.ssh-verification span {
-    margin-left: 1rem;
-    color: #2e7d32;
-}
-
-/* Real-time Clock */
-.real-time-clock {
-    padding: 1rem;
-    background-color: #e3f2fd;
-    border: 1px solid #2196f3;
+.admin-login-box {
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 8px;
-    margin-bottom: 1rem;
+    padding: 3rem;
+    width: 100%;
+    max-width: 400px;
     text-align: center;
+    border: 1px solid rgba(0, 86, 179, 0.1)
 }
 
-.real-time-clock h4 {
-    margin: 0;
-    color: #1976d2;
+.admin-login-title {
+    color: #0056b3;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+}
+
+.admin-login-button {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.admin-login-button.simple-password {
+    background-color: #004494;
+    color: white;
+}
+
+.admin-login-button.back-button {
+    background-color: #6c757d;
+    color: white;
 }
 
 /* Tab Navigation */
@@ -91,21 +106,6 @@
     border-bottom-color: #f57c00;
 }
 
-.tab-button.testing {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
-}
-
-.tab-button.testing.active {
-    background-color: #e1bee7;
-    border-bottom-color: #7b1fa2;
-}
-
-.tab-button:not(.active) {
-    background-color: #f5f5f5;
-    color: #666;
-}
-
 /* Election Status */
 .election-status {
     padding: 1.5rem;
@@ -146,7 +146,6 @@
 
 .election-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
 }
 
@@ -160,14 +159,9 @@
     background-color: #ffc107;
     color: #212529;
     border: none;
-    border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: bold;
-}
-
-.call-election-btn:hover {
-    background-color: #e0a800;
 }
 
 .time-remaining {
@@ -200,7 +194,6 @@
 .voter-registration-status {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    border-radius: 8px;
 }
 
 .voter-registration-status h3 {
@@ -216,7 +209,6 @@
     padding: 1.5rem;
     background-color: #fff3cd;
     border: 2px solid #ffc107;
-    border-radius: 8px;
     margin-bottom: 2rem;
 }
 
@@ -230,7 +222,84 @@
     margin: 0;
 }
 
-/* Voting Status Control */
+/* Enhanced Voting Status Control */
+.enhanced-voting-control {
+    margin-bottom: 2rem;
+    padding: 2rem;
+    border: 3px solid;
+    border-radius: 12px;
+}
+
+.enhanced-voting-control.open {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
+
+.enhanced-voting-control.closed {
+    background-color: #ffebee;
+    border-color: #f44336;
+}
+
+.enhanced-voting-control h3 {
+    font-size: 1.4rem;
+    margin: 0 0 1rem 0;
+}
+
+.enhanced-voting-control.open h3 {
+    color: #2e7d32;
+}
+
+.enhanced-voting-control.closed h3 {
+    color: #d32f2f;
+}
+
+.voting-control-grid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+}
+
+.voting-status-info p {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: bold;
+}
+
+.voting-status-text {
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+.voting-status-description {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.voting-control-button-container {
+    text-align: center;
+}
+
+.enhanced-voting-button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.enhanced-voting-button.open {
+    background-color: #4caf50;
+}
+
+.enhanced-voting-button.close {
+    background-color: #f44336;
+}
+
+/* Legacy Voting Status Control (for compatibility) */
 .voting-status {
     margin-bottom: 1rem;
     padding: 1rem;
@@ -263,9 +332,6 @@
     background-color: #f44336;
 }
 
-.toggle-voting-btn:hover {
-    opacity: 0.9;
-}
 
 /* Candidate Nomination Form */
 .nomination-form {
@@ -338,28 +404,6 @@
     background-color: white;
 }
 
-.radio-grid {
-    display: grid;
-    gap: 0.5rem;
-}
-
-.radio-option {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.radio-option input {
-    margin-right: 0.5rem;
-}
-
-.radio-option small {
-    margin-left: 0.5rem;
-    color: #666;
-}
-
 .submit-nomination-btn {
     padding: 0.75rem 1.5rem;
     color: white;
@@ -374,9 +418,6 @@
     background-color: #4caf50;
 }
 
-.submit-nomination-btn.enabled:hover {
-    background-color: #45a049;
-}
 
 .submit-nomination-btn.disabled {
     background-color: #ccc;
@@ -424,7 +465,7 @@
 }
 
 .results-locked .lock-icon {
-    font-size: 3rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
     font-weight: bold;
     color: #666;
@@ -450,43 +491,6 @@
     margin: 0.25rem 0;
 }
 
-/* Winner Announcement */
-.winner-announcement {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: #e8f5e9;
-    border: 2px solid #4caf50;
-    border-radius: 8px;
-}
-
-.winner-announcement h4 {
-    margin: 0 0 0.5rem 0;
-}
-
-.winner-announcement.single h4 {
-    color: #2e7d32;
-}
-
-.winner-announcement.tie h4 {
-    color: #f57f17;
-}
-
-.winner-announcement p {
-    margin: 0;
-}
-
-.winner-announcement.single p {
-    color: #2e7d32;
-}
-
-.winner-announcement ul {
-    margin: 0;
-}
-
-.winner-announcement.tie ul {
-    color: #f57f17;
-}
-
 /* PR-STV Simulation */
 .prst-simulation {
     margin-bottom: 2rem;
@@ -508,7 +512,6 @@
 
 .simulation-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -541,9 +544,6 @@
     background-color: #4CAF50;
 }
 
-.run-simulation-btn.enabled:hover {
-    background-color: #45a049;
-}
 
 .run-simulation-btn.disabled {
     background-color: #ccc;
@@ -560,81 +560,10 @@
     font-size: 1rem;
 }
 
-.show-results-btn:hover {
-    background-color: #0056b3;
-}
-
 .simulation-notice {
     margin-top: 0.5rem;
     font-size: 0.9rem;
     color: #d32f2f;
-}
-
-/* Ballot Testing */
-.ballot-testing {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.preview-ballot-btn {
-    padding: 0.5rem 1rem;
-    background-color: #17a2b8;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.preview-ballot-btn:hover {
-    background-color: #138496;
-}
-
-.ballot-testing p {
-    margin: 0.5rem 0 0 0;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-/* Testing Controls */
-.testing-controls {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border: 1px solid orange;
-    background-color: #fff3cd;
-    border-radius: 4px;
-}
-
-.testing-controls p {
-    margin-bottom: 0.5rem;
-}
-
-.reset-ui-btn {
-    padding: 0.5rem 1rem;
-    background-color: #ffc107;
-    color: #212529;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 1rem;
-}
-
-.reset-ui-btn:hover {
-    background-color: #e0a800;
-}
-
-.clear-data-btn {
-    padding: 0.5rem 1rem;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.clear-data-btn:hover {
-    background-color: #c82333;
 }
 
 /* Voting Activity Log */
@@ -677,7 +606,6 @@
     width: 100%;
     border-collapse: collapse;
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .voter-table thead tr {
@@ -697,19 +625,6 @@
 
 .voter-table tbody tr {
     border-bottom: 1px solid #eee;
-}
-
-.voter-table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
 }
 
 .voter-name {
@@ -740,10 +655,6 @@
     font-size: 0.85rem;
 }
 
-.approve-btn:hover {
-    background-color: #45a049;
-}
-
 .reject-btn {
     padding: 0.5rem 1rem;
     background-color: #f44336;
@@ -752,10 +663,6 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85rem;
-}
-
-.reject-btn:hover {
-    background-color: #da190b;
 }
 
 .processed-status {
@@ -783,91 +690,11 @@
     font-size: 0.9rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .tab-navigation {
-        flex-direction: column;
-        border-bottom: none;
-    }
-    
-    .tab-button {
-        margin-right: 0;
-        margin-bottom: 0.5rem;
-        border-bottom: none;
-        border-left: 3px solid transparent;
-    }
-    
-    .tab-button.active {
-        border-bottom: none;
-        border-left-color: currentColor;
-    }
-    
-    .election-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .simulation-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .voter-table {
-        font-size: 0.85rem;
-    }
-    
-    .voter-table th,
-    .voter-table td {
-        padding: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .admin-panel {
-        margin-top: 1rem;
-    }
-    
-    .real-time-clock {
-        padding: 0.5rem;
-    }
-    
-    .real-time-clock h4 {
-        font-size: 1rem;
-    }
-    
-    .election-status,
-    .voter-registration-status,
-    .nomination-form,
-    .prst-simulation {
-        padding: 1rem;
-    }
-    
-    .results-locked {
-        padding: 1rem;
-    }
-    
-    .results-locked .lock-icon {
-        font-size: 2rem;
-    }
-}
-
-/* Animation for real-time updates */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-}
-
-.time-remaining.active {
-    animation: pulse 2s infinite;
-}
-
 /* Focus states for accessibility */
 .tab-button:focus,
 .call-election-btn:focus,
 .toggle-voting-btn:focus,
+.enhanced-voting-button:focus,
 .submit-nomination-btn:focus,
 .run-simulation-btn:focus,
 .show-results-btn:focus,
@@ -875,14 +702,12 @@
 .reset-ui-btn:focus,
 .clear-data-btn:focus,
 .approve-btn:focus,
-.reject-btn:focus {
-    outline: 2px solid #2196f3;
-    outline-offset: 2px;
-}
+.reject-btn:focus
 
-.form-input:focus {
+
+.form-input:focus,
+.emergency-password-input:focus {
     border-color: #2196f3;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
 }
 
 /* General Utilities */
@@ -890,23 +715,4 @@ hr {
     margin: 2rem 0;
     border: none;
     border-top: 1px solid #ccc;
-}
-
-/* Print styles */
-@media print {
-    .tab-navigation,
-    .testing-controls,
-    .action-buttons {
-        display: none;
-    }
-    
-    .admin-panel {
-        margin-top: 0;
-    }
-    
-    .election-status,
-    .voter-registration-status,
-    .nomination-form {
-        break-inside: avoid;
-    }
 }

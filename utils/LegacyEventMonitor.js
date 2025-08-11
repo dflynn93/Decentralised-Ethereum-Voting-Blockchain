@@ -33,160 +33,6 @@ class LegacyEventMonitor {
         console.log("Legacy event monitoring started (simulation mode)");
     }
 
-    /*setupBasicEventListeners() {
-        try {
-            console.log("Setting up basic event listeners...");
-            
-            // Monitor basic events that exist in your current contract
-            this.contract.on('VoteCommitted', (voter, nullifier, event) => {
-                this.handleEvent('VOTE_COMMITTED', {
-                    voter,
-                    nullifier,
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                });
-            });
-
-            this.contract.on('VoteRevealed', (voter, event) => {
-                this.handleEvent('VOTE_REVEALED', {
-                    voter,
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                });
-            });
-
-            this.contract.on('VoterAuthorised', (voter, event) => {
-                this.handleEvent('VOTER_AUTHORISED', {
-                    voter,
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                });
-            });
-
-            this.contract.on('PhaseChanged', (newPhase, event) => {
-                this.handleEvent('PHASE_CHANGED', {
-                    newPhase: this.getPhaseString(Number(newPhase)),
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                });
-            });
-
-            // Only try to set up listeners for events that exist
-            const possibleEvents = ['VoteCommitted', 'VoteRevealed', 'VoterAuthorised', 'PhaseChanged'];
-        
-            possibleEvents.forEach(eventName => {
-            try {
-                if (this.contract.filters && this.contract.filters[eventName]) {
-                    // Set up the specific event listener here
-                    console.log(`${eventName} listener set up successfully`);
-                }
-            } catch (error) {
-                console.log(`${eventName} event not available in contract (this is normal)`);
-            }
-        });
-
-            console.log("Legacy event listeners set up successfully");
-        } catch (error) {
-            console.warn("Some event listeners could not be set up:", error.message);
-        }
-    }
-
-    async loadHistoricalEvents() {
-        try {
-            console.log("Loading historical events (legacy mode)...");
-            
-            const currentBlock = await this.provider.getBlockNumber();
-            const fromBlock = Math.max(0, currentBlock - 1000); // Last ~1k blocks
-            
-            // Try to load basic events that exist
-            const eventTypes = ['VoteCommitted', 'VoteRevealed', 'VoterAuthorised', 'PhaseChanged'];
-
-            for (const eventType of eventTypes) {
-                try {
-                    if (this.contract.filters && this.contract.filters[eventType]) {
-                        const filter = this.contract.filters[eventType]();
-                        const events = await this.contract.queryFilter(filter, fromBlock, currentBlock);
-                        
-                        events.forEach(event => {
-                            this.processLegacyHistoricalEvent(eventType, event);
-                        });
-                    }
-                } catch (error) {
-                    console.warn(`Could not load ${eventType} events:`, error.message);
-                }
-            }
-
-            console.log(`Loaded ${this.auditEvents.length} historical events (legacy mode)`);
-            this.notifyListeners('HISTORY_LOADED', { count: this.auditEvents.length });
-            
-        } catch (error) {
-            console.error("Error loading historical events:", error);
-        }
-    }
-
-    processLegacyHistoricalEvent(eventType, event) {
-        let processedEvent;
-
-        switch (eventType) {
-            case 'VoteCommitted':
-                processedEvent = {
-                    type: 'VOTE_COMMITTED',
-                    voter: event.args.voter,
-                    nullifier: event.args.nullifier,
-                    timestamp: Date.now() / 1000, // Approximate
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                };
-                break;
-
-            case 'VoteRevealed':
-                processedEvent = {
-                    type: 'VOTE_REVEALED',
-                    voter: event.args.voter,
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                };
-                break;
-
-            case 'VoterAuthorised':
-                processedEvent = {
-                    type: 'VOTER_AUTHORISED',
-                    voter: event.args.voter,
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                };
-                break;
-
-            case 'PhaseChanged':
-                processedEvent = {
-                    type: 'PHASE_CHANGED',
-                    newPhase: this.getPhaseString(Number(event.args.newPhase)),
-                    timestamp: Date.now() / 1000,
-                    blockNumber: event.blockNumber,
-                    transactionHash: event.transactionHash
-                };
-                break;
-
-            default:
-                return;
-        }
-
-        if (processedEvent) {
-            this.auditEvents.push({
-                ...processedEvent,
-                id: `${event.blockNumber}-${event.transactionIndex}`,
-                isHistorical: true,
-                data: processedEvent
-            });
-        }
-    }
-    */
     handleEvent(type, data) {
         const auditEvent = {
             id: `${data.blockNumber}-${data.transactionHash}-${Date.now()}`,
@@ -305,29 +151,7 @@ class LegacyEventMonitor {
         return {
             totalVoteActions: voteActions.length,
             totalAdminActions: adminActions.length,
-            totalCommitments: 0,
-            totalReveal: 0,
             lastUpdated: Date.now() / 1000
-        };
-    }
-  exportAuditTrail() {
-        return {
-            exportedAt: new Date().toISOString(),
-            totalEvents: this.auditEvents.length,
-            events: this.getAllEvents(),
-            mode: 'legacy-simulation',
-            contractInfo: {
-                hasEvents: false,
-                note: 'Contract does not emit events - using simulation mode'
-            },
-            summary: {
-                eventTypes: [...new Set(this.auditEvents.map(e => e.type))],
-                timeRange: this.auditEvents.length > 0 ? {
-                    earliest: Math.min(...this.auditEvents.map(e => e.timestamp)),
-                    latest: Math.max(...this.auditEvents.map(e => e.timestamp))
-                } : null,
-                blockRange: null // No real blocks in simulation mode
-            }
         };
     }
 
@@ -366,11 +190,6 @@ class LegacyEventMonitor {
                     actor: 'System',
                 };
         }
-    }
-
-    getPhaseString(phaseNumber) {
-        const phases = ['Registration', 'Commitment', 'Reveal', 'Ended'];
-        return phases[phaseNumber] || 'Unknown';
     }
 
     stopMonitoring() {

@@ -223,6 +223,9 @@ const Footer = () => {
                     tamper-proof, and verifiable elections. All votes are cryptographically secured 
                     and permanently recorded on the blockchain.
                 </div>
+
+
+                
             </div>
         </footer>               
     );
