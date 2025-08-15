@@ -21,150 +21,6 @@ window.getStatusColor = function(status) {
 // AWS Backend URL - For Deployment
 const AWS_BACKEND_URL = 'http://localhost:3001';
 
-// Simple Admin Login Component
-const SimpleAdminLogin = ({ onAdminLogin, walletAddress }) => {
-    const [adminPassword, setAdminPassword] = useState('');
-    const [isVerifying, setIsVerifying] = useState(false);
-    const [error, setError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-
-    const handleAdminLogin = async () => {
-        console.log('STARTING ADMIN LOGIN PROCESS - BYPASSING ADMIN LOGIN FOR TESTING');
-        setIsVerifying(true);
-        setError('');
-
-        setTimeout(() => {
-            console.log('Simulating admin login success after 1 second');
-            onAdminLogin(true);
-            setIsVerifying(false);
-        }, 1000);
-
-        try {
-            console.log('Sending admin verification request to AWS backend...');
-            console.log('Wallet:', walletAddress);
-            console.log('Password:', adminPassword);
-            
-            const response = await fetch(`${AWS_BACKEND_URL}/api/admin/verify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    walletAddress: walletAddress,
-                    password: adminPassword
-                }),
-            });
-
-            console.log('Response status:', response.status);
-            const data = await response.json();
-            console.log('Backend response:', data);
-
-            if (data.success) {
-                console.log('SUCCESS! Calling onAdminLogin...');
-                onAdminLogin(true);
-            } else {
-                console.log('FAILED:', data.error);
-                setError(data.error || 'Admin verification failed');
-            }
-        } catch (error) {
-            console.error('NETWORK ERROR:', error);
-            setError('Connection error: ' + error.message);
-        } finally {
-            setIsVerifying(false);
-        }
-    };
-
-    // Effect to handle Enter key press
-    useEffect(() => {
-        // For demo purposes, allow mixed content
-        if (typeof window !== 'undefined') {
-            console.log('Demo mode: Backend on HTTP, Frontend on HTTPS');
-        }
-    }, []);
-
-    return (
-        <div style={{ 
-            minHeight: "100vh", 
-            background: "linear-gradient(135deg, #1e3a8a 0%, #7c3aed 50%, #3730a3 100%)",
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            padding: "1rem"
-        }}>
-            <div style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
-                borderRadius: "16px",
-                padding: "2rem",
-                width: "100%",
-                maxWidth: "400px",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-            }}>
-                <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "white", marginBottom: "1.5rem", textAlign: "center" }}>
-                    Admin Access
-                </h2>
-                
-                <div style={{ marginBottom: "1.5rem", background: "rgba(59, 130, 246, 0.2)", border: "1px solid rgba(147, 197, 253, 0.3)", borderRadius: "8px", padding: "1rem" }}>
-                    <p style={{ color: "#BFDBFE", fontSize: "0.875rem", margin: 0 }}>
-                        <strong>Connected Wallet:</strong><br />
-                        {walletAddress}
-                    </p>
-                </div>
-
-                <div style={{ marginBottom: "1rem" }}>
-                    <label style={{ display: "block", color: "white", fontWeight: "500", marginBottom: "0.5rem" }}>
-                        Admin Password
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                    <input
-                        type={showPassword ? "text" : "password"}
-                        value={adminPassword}
-                        onChange={(e) => setAdminPassword(e.target.value)}
-                        placeholder="Enter admin password"
-                        style={{
-                            width: "100%",
-                            padding: "0.75rem 1rem",
-                            background: "rgba(255, 255, 255, 0.1)",
-                            border: "1px solid rgba(255, 255, 255, 0.3)",
-                            borderRadius: "8px",
-                            color: "white",
-                            outline: "none",
-                            boxSizing: "border-box"
-                        }}
-                        onKeyPress={(e) => e.key === 'Enter' && !isVerifying && handleAdminLogin()}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{
-                            position: 'absolute',
-                                right: '0.75rem',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                fontSize: '0.8rem',
-                                padding: '0.25rem'
-                        }}
-                    >
-                        {showPassword ? 'Hide' : 'Show'}
-                    </button>
-                </div>
-            </div>
-
-                {error && (
-                    <div style={{ background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(252, 165, 165, 0.3)", borderRadius: "8px", padding: "0.75rem", marginBottom: "1rem" }}>
-                        <p style={{ color: "#FECACA", fontSize: "0.875rem", margin: 0 }}>{error}</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
 function App() {
     const [walletAddress, setWalletAddress] = useState('');
     const [contract, setContract] = useState(null);
@@ -174,7 +30,6 @@ function App() {
     const [loading, setLoading] = useState(true);
     const [role, setRole] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
-    const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
     const [votingClosed, setVotingClosed] = useState(
         localStorage.getItem("votingClosed") === "true"
     );
@@ -516,27 +371,16 @@ function App() {
             {/* Admin Panel Logic */}
             {walletAddress && role === "admin" && !loading && (
                 // Show admin panel
-                isAdminLoggedIn ? (
-                    <AdminPanel 
-                        candidates={candidates}
-                        votingClosed={votingClosed}
-                        onToggleVoting={onToggleVoting}
-                        onCandidateAdded={refreshCandidates}
-                        votingHistory={votingHistory || []}
-                        contract={contract}
-                        provider={provider}
-                        walletAddress={walletAddress}
-                    />
-                ) : (
-                    <SimpleAdminLogin
-                        onAdminLogin={(success) => {
-                            if (success) {
-                                setIsAdminLoggedIn(true);
-                            }
-                        }}
-                        walletAddress={walletAddress}
-                    />
-                    )
+                <AdminPanel 
+                    candidates={candidates}
+                    votingClosed={votingClosed}
+                    onToggleVoting={onToggleVoting}
+                    onCandidateAdded={refreshCandidates}
+                    votingHistory={votingHistory || []}
+                    contract={contract}
+                    provider={provider}
+                    walletAddress={walletAddress}
+                />
             )}
                    
             {/* Observer Panel */}

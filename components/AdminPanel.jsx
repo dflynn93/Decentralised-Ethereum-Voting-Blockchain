@@ -61,6 +61,10 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
     const [isProcessing, setIsProcessing] = useState(false);
     const [countingMessage, setCountingMessage] = useState("");
 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
 
     // Voter registration state
     const [voterRegistrations, setVoterRegistrations] = useState([
@@ -111,6 +115,15 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
         setVotingPhase(newPhase);
         if (onElectionPhaseChange) {
             onElectionPhaseChange(newPhase, additionalData);
+        }
+    };
+
+    const handleAdminLogin = () => {
+        if (adminPassword === 'admin123') {
+            setIsLoggedIn(true);
+            console.log("Admin login successful");
+        } else {
+            alert("Invalid admin password.");
         }
     };
 
@@ -537,9 +550,66 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
 
     const statusInfo = getElectionStatus();
 
+    if (!isLoggedIn) {
+        return (
+            <div className="admin-panel">
+                <h2>Admin Panel</h2>
+                <div className="login-container">
+                    <h3>admin Login</h3>
+                    <div className="form-group">
+                        <label>
+                            Admin Password:
+                            <div style={{ position: 'relative' }}>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={adminPassword}
+                                    onChange={(e) => setAdminPassword(e.target.value)}
+                                    className="login-input"
+                                    placeholder="Enter admin password"
+                                    onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                                    style={{ paddingRight: '3rem' }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '0.75rem',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#666',
+                                        fontSize: '0.8rem',
+                                        padding: '0.25rem'    
+                                    }}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
+                        </label>
+                    </div>
+                    <button
+                        onClick={handleAdminLogin}
+                        className="login-button"
+                        disabled={!adminPassword}
+                    >
+                        Login as Admin
+                    </button>
+                    <div className="test-credentials">
+                        <strong>Test Credentials</strong><br/>
+                        Password: admin123
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="admin-panel">
             <h2>Irish Election Administration Panel - BallyBeg, Co. Donegal</h2>
+
+            
             
             {/* Quick Reset Button for Testing */}
             <div style={{ 

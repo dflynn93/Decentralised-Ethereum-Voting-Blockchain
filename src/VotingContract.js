@@ -284,6 +284,11 @@ export const isCurrentUserAdmin = async () => {
         const signer = await getSigner();
         const userAddress = await signer.getAddress();
         const adminAddress = await getAdmin();
+
+        const knownAdminWallets = [
+            '0x1Da5916E8443b0f028d2bdA63b8639eF609e9bDe'
+        ];
+
         return userAddress.toLowerCase() === adminAddress.toLowerCase();
     } catch (error) {
         console.error("Error checking admin status:", error);

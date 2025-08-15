@@ -62,9 +62,25 @@ function logAdminAction(action, walletAddress, details = '') {
     // Add CloudWatch logging when IAM role is configured
     const iamInfo = checkIAMCapabilties();
     if (iamInfo.hasIAMRole) {
-        // Send to CloudWatch logs
-        // const aws = require('aws-sdk');
-        // const cloudWatchLogs - new aws.CloudWatchLogs({ region: iamInfo.region});
+        try {
+            const AWS = require('aws-sdk');
+            const cloudWatchLogs = new AWS.cloudWatchLogs({ region: iamInfo.region });
+            
+            const params = {
+                logGroupName: '/eirvote/application',
+                logStreamName: `admin-actions-${new Date().toISOString().split('T')[0]}`,
+                logEvents: [{
+                    message: JSON.stringify(logEntry),
+                    timestamp: Date.now()
+                }]
+            };
+
+            cloudWatchLogs.putLogEvents(params).promise()
+                .then(() => console.log('CloudWatch log sent successfully'))
+                .catch(err => console.log('CloudWatch logging failed:', err.message));
+        } catch (error) {
+            console.log('CloudWatch not available:', error.message);
+        }      
     } else {
         console.log('CloudWatch logging not available (no IAM role)');
     }

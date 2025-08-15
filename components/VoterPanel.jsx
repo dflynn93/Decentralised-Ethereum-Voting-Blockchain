@@ -60,13 +60,15 @@ const VoterPanel = React.memo(({ candidates, hasVoted, onSubmitRanking, votingCl
         setRankings(newRankings);
 
         // Save to localStorage for recovery
-        const pendingVoteKey = `pendingVote_${walletAddress}`;
-        localStorage.setItem(pendingVoteKey, JSON.stringify({
-            rankings: newRankings,
-            timestamp: new Date().toISOString(),
-            walletAddress: walletAddress,
-            zkpProof: zkpProof
-        }));
+        if (Object.keys(newRankings).length > 0) {
+            const pendingVoteKey = `pendingVote_${walletAddress}`;
+            localStorage.setItem(pendingVoteKey, JSON.stringify({
+                rankings: newRankings,
+                timestamp: new Date().toISOString(),
+                walletAddress: walletAddress,
+                zkpProof: zkpProof
+            }));
+        }
     };
 
     const handleSubmit = async () => {
