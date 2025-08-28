@@ -28,12 +28,12 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
     // Election state - initialise from localStorage or default values
     const [votingPhase, setVotingPhase] = useState(() => {
         const saved = localStorage.getItem('adminPanel_votingPhase');
-        return saved || electionState?.phase || 'PRE_ELECTION';
+        return saved || 'PRE_ELECTION';
     });
     
     const [electionCalled, setElectionCalled] = useState(() => {
         const saved = localStorage.getItem('adminPanel_electionCalled');
-        return saved ? JSON.parse(saved) : (electionState?.electionCalled || false);
+        return saved ? JSON.parse(saved) : false; 
     });
 
     // Missing electionCalledDate state
@@ -195,54 +195,66 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
         }
     };
 
-    // Enhanced count votes function with PRSTV simulation
+    // Enhanced count votes function with PRSTV simulation and voter counts
     const handleCountVotesWithPRSTV = async () => {
-        if (!window.confirm('Step 3: Count Votes?\n\nThis will:\n- Count all decrypted votes\n- Compile election results\n- Verify counting integrity\n- Generate PR-STV simulation\n\nProceed?')) {
+        if (!window.confirm('Step 3: Count Votes?\n\nThis will:\n- Count all decrypted votes\n- Combine with simulated votes for testing\n- Compile election results\n- Generate PR-STV simulation\n\nProceed?')) {
             return;
         }
 
         setIsProcessing(true);
         try {
             console.log("Starting vote counting...");
-            let result;
-            
-            try {
-                result = await countVotes();
-            } catch (error) {
-                console.log("Blockchain counting failed, simulating for testing:", error);
-                result = {
-                    success: true,
-                    message: "Vote counting simulated for testing",
-                    nextStep: "Results ready for display"
-                };
+        
+            // Calculate real votes from current candidates state
+            let realVoteCount = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+            console.log(`Real votes counted from blockchain: ${realVoteCount}`);
+        
+            // Add simulated votes for testing (only if we have candidates)
+            let simulatedVoteCount = 0;
+        
+            if (candidates.length > 0) {
+                candidates.forEach((candidate) => {
+                    const simulatedVotes = Math.floor(Math.random() * 15) + 5; // 5-20 simulated votes
+                    simulatedVoteCount += simulatedVotes;
                 
-                // Simulate some votes for candidates
-                if (candidates.length > 0) {
-                    candidates.forEach((candidate, index) => {
-                        candidate.votes = Math.floor(Math.random() * 50) + 10;
-                    });
-                }
+                    // Store breakdown for display
+                    candidate.realVotes = candidate.votes || 0;
+                    candidate.simulatedVotes = simulatedVotes;
+                
+                    // Update total votes
+                    candidate.votes = (candidate.votes || 0) + simulatedVotes;
+                });
             }
-
-            alert("Vote counting complete! PR-STV simulation generated.");
-
-            // Refresh candidates data
-            if (onCandidateAdded) {
-                await onCandidateAdded();
-            }
-
-            // Generate PRSTV simulation if we have candidates
+        
+            const totalVotes = realVoteCount + simulatedVoteCount;
+        
+            // Generate PRSTV simulation with combined votes
             if (candidates.length >= 2) {
                 const simulation = runPRSTVSimulation(candidates, numSimulatedVoters, numSeats);
                 setPrstResults(simulation.results);
                 setSimulationBallots(simulation.ballots);
                 setShowPRSTVSimulation(true);
             }
-
-            setCountingStatus(result);
+        
+            // Set counting status with vote breakdown
+            setCountingStatus({
+                success: true,
+                message: `Vote counting complete! ${realVoteCount} real + ${simulatedVoteCount} simulated = ${totalVotes} total votes`,
+                realVotes: realVoteCount,
+                simulatedVotes: simulatedVoteCount,
+                totalVotes: totalVotes,
+                nextStep: "Results ready for publication"
+            });
+        
+            alert(`Vote counting complete! PR-STV simulation generated.\n\nVote Breakdown:\n- Real votes: ${realVoteCount}\n- Simulated votes: ${simulatedVoteCount}\n- Total votes: ${totalVotes}`);
+        
+            // Refresh candidates data
+            if (onCandidateAdded) {
+                await onCandidateAdded();
+            }
+        
         } catch (error) {
             console.error("Count votes with PRSTV failed:", error);
-            // Don't stop the process, just continue with simulation
             setCountingStatus({
                 success: false,
                 message: "Counting failed but continuing for testing",
@@ -409,10 +421,7 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
             default: return '#666';
         }
     };
-
-    const isVoterRegistrationOpen = () => {
-        return voterRegistrationOpen;
-    };
+ 
 
     const runPRSTVTest = () => {
     if (candidates.length >= 2) {
@@ -432,7 +441,6 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
             
             // Try blockchain but don't fail if it doesn't work
             try {
-                await startCommitmentPhase(60);
                 console.log("Blockchain call successful");
             } catch (blockchainError) {
                 console.log("Blockchain call failed, continuing with UI-only:", blockchainError);
@@ -1026,6 +1034,29 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
                                 ({candidates.length} candidate{candidates.length !== 1 ? 's' : ''} registered)
                             </span>
                         </h3>
+
+                        {/* Vote Count Summary */}
+                        {votingClosed && countingStatus && countingStatus.totalVotes && (
+                            <div style={{
+                                padding: '1rem',
+                                backgroundColor: '#e3f2fd',
+                                border: '1px solid #2196f3',
+                                borderRadius: '4px',
+                                marginBottom: '1rem'
+                            }}>
+                                <strong>Vote Count Summary:</strong>
+                                <br />
+                                Real Blockchain Votes: {countingStatus.realVotes || 0}
+                                <br />
+                                Simulated Test Votes: {countingStatus.simulatedVotes || 0}
+                                <br />
+                                <strong>Total Combined Votes: {countingStatus.totalVotes || 0}</strong>
+                                <br />
+                                <small style={{ color: '#666', fontStyle: 'italic' }}>
+                                    Simulated votes added for testing purposes only
+                                </small>
+                            </div>
+                        )}
                         {candidates.length === 0 ? (
                             <p>No candidates added yet for BallyBeg constituency.</p>
                         ) : votingClosed ? (
@@ -1039,6 +1070,12 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
                                             {totalVotes > 0 && (
                                                 <> ({(((c.votes || 0) / totalVotes) * 100).toFixed(1)}%)</>
                                             )}
+                                            {/* Show vote breakdown if available */}
+                                            {c.realVotes !== undefined && (
+                                                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
+                                                    Real: {c.realVotes}, Simulated: {c.simulatedVotes || 0}
+                                                </div>
+                                        )}
                                         </li>
                                     ))}
                             </ul>
@@ -1075,26 +1112,39 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
 
                     {/* Winner announcement - only show when voting is closed and there are votes */}
                     {votingClosed && totalVotes > 0 && candidates.length > 0 && (
-                        <div className={`winner-announcement ${winners.length === 1 ? 'single' : 'tie'}`}>
+                        <div style={{
+                            padding: '1.5rem',
+                            backgroundColor: '#e8f5e9',
+                            border: '2px solid #4caf50',
+                            borderRadius: '8px',
+                            marginBottom: '1rem'
+                        }}>
+                            <h4 style={{ color: '#2e7d32', margin: '0 0 1rem 0' }}>
+                                    BallyBeg Election Results
+                            </h4>
                             {winners.length === 1 ? (
-                                <>
-                                    <h4>🎉 BallyBeg Election Winner: {winners[0].name} ({winners[0].party})</h4>
-                                    <p>
-                                        Final vote count: <strong>{winners[0].votes} votes</strong> 
-                                        ({((winners[0].votes / totalVotes) * 100).toFixed(1)}%)
-                                    </p>
-                                </>
+                                <div>
+                                    <strong>Winner: {winners[0].name} ({winners[0].party})</strong>
+                                    <br />
+                                    Final vote count: <strong>{winners[0].votes} votes</strong> 
+                                    ({((winners[0].votes / totalVotes) * 100).toFixed(1)}%)
+                                    {winners[0].realVotes !== undefined && (
+                                        <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                                            Breakdown: {winners[0].realVotes} real votes + {winners[0].simulatedVotes} simulated votes
+                                        </div>
+                                    )}
+                                </div>
                             ) : winners.length > 1 ? (
-                                <>
-                                    <h4>It's a tie in BallyBeg between:</h4>
-                                    <ul>
+                                <div>
+                                    <strong>Tie between:</strong>
+                                    <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
                                         {winners.map((w) => (
                                             <li key={w.id}>
                                                 <strong>{w.name}</strong> ({w.party}) - {w.votes} votes
                                             </li>
                                         ))}
                                     </ul>
-                                </>
+                                </div>
                             ) : null}
                         </div>
                     )}

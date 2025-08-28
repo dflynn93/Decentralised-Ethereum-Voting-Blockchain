@@ -49,13 +49,6 @@ const DigitalBallot = ({
         }
     };
 
-    const getBallotStatus = () => {
-        if (isPreviewMode) return "BALLOT PREVIEW";
-        if (votingClosed) return "VOTING CLOSED";
-        if (hasVoted) return "VOTE CAST";
-        return "OFFICIAL BALLOT";
-    };
-
     // Function to get candidate image based on their order
     const getCandidateImage = (candidateIndex) => {
         return candidateImages[candidateIndex] || null;
@@ -92,7 +85,6 @@ const DigitalBallot = ({
                 </h3>
                 <p style={{ margin: '0', fontSize: '1rem', opacity: 0.9 }}>
                     {isPreviewMode ? "Preview Mode - No votes will be recorded" : 
-                     votingClosed ? "Voting has ended" :
                      hasVoted ? "Thank you for voting" : 
                      "Select your preferred candidate"}
                 </p>
@@ -112,11 +104,11 @@ const DigitalBallot = ({
                     <p style={{ margin: '0', fontSize: '0.9rem' }}>
                         {canVoteInConstituency ? (
                             <>
-                                <strong>✓ Authorised:</strong> You are registered to vote in {constituency}, Co. Donegal
+                                <strong>Authorised:</strong> You are registered to vote in {constituency}, Co. Donegal
                             </>
                         ) : (
                             <>
-                                <strong>✗ Not Authorised:</strong> You are registered in {userConstituency} but this ballot is for {constituency}
+                                <strong>Not Authorised:</strong> You are registered in {userConstituency} but this ballot is for {constituency}
                             </>
                         )}
                     </p>
@@ -155,7 +147,6 @@ const DigitalBallot = ({
                             <li>Click "Cast Vote" to submit your selection securely to the blockchain.</li>
                         </>
                     )}
-                    <li>Candidate photographs are provided for identification purposes only.</li>
                 </ol>
             </div>
 
@@ -337,7 +328,7 @@ const DigitalBallot = ({
                     borderTop: '2px solid #dee2e6',
                     textAlign: 'center'
                 }}>
-                    {!canVoteInConstituency ? (
+                    {!canVoteInConstituency ? ( // no need for this part -  to remove. 
                         <div style={{
                             padding: '1rem',
                             backgroundColor: '#f8d7da',

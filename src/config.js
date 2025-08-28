@@ -19,7 +19,7 @@ const config = {
   app: {
     name: "Eirvote",
     version: "1.0.0",
-    environment: "production", // set from production to development
+    environment: "development", // set from production to development
     debug: false, // disabled in production
     maxCandidates: 20,
     voteTimeoutMinutes: 60
@@ -56,7 +56,9 @@ config.features = {
   enableVoteEncryption: true,
   enableMerkleVerification: true,
   enableMultiLanguage: false,
-  enableMobileSupport: true
+  enableMobileSupport: false,
+  enableBiometricAuth: false,
+  enableMultiAZ: false
 };
 
 // Validation function

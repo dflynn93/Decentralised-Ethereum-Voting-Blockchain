@@ -1,8 +1,8 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamo";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {DynamoDBDocumentClient, PutCommand, GetCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new DynamoDBClient({ region: "eu-west-1" });
-const dynamoc =DynamoDBDocumentClient.from(client);
+const dynamo =DynamoDBDocumentClient.from(client);
 
 const TABLE_NAME = 'eirvote-data';
 
@@ -10,7 +10,7 @@ const TABLE_NAME = 'eirvote-data';
 export const DB = {
     // Store any data by key
     async put(key, data) {
-        await dynamoc.send(new PutCommand({
+        await dynamo.send(new PutCommand({
             TableName: TABLE_NAME,
             Item: {
                 id: key,
@@ -22,7 +22,7 @@ export const DB = {
 
     // Get data by key
     async get(key) {
-        const result = await dynamoc.send(new GetCommand({
+        const result = await dynamo.send(new GetCommand({
             TableName: TABLE_NAME,
             Key: { id: key }
         }));
@@ -32,7 +32,7 @@ export const DB = {
     // Check if key exists
     async exists(key) {
         const data = await this.get(key);
-        return data === undefined;
+        return data !== undefined;
     },
 
     // List all data (for debugging)
@@ -42,4 +42,30 @@ export const DB = {
         }));
         return result.Items || [];
     }
- }
+ };
+
+
+ // Admin management
+ export const adminData = {
+    // Store admin wallet as verified
+    async addAdmin(walletAddress) {
+        const admins = await this.getAdmins() || [];
+        if (!admins.includes(walletAddress)) {
+            admins.push(walletAddress);
+            await DB.put('admin_wallets', admins);
+        }
+    },
+
+    // Get all admin wallets
+    async getAdmins() {
+        return await DB.get('admin_wallets') || [
+            '0x1Da5916E8443b0f028d2bdA63b8639eF609e9bDe'
+        ];
+    },
+
+    // Check if wallet is admin
+    async isAdmin(walletAddress) {
+        const admins = await this.getAdmins();
+        return admins.includes(walletAddress);
+    }
+ };

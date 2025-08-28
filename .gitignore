@@ -28,3 +28,9 @@ Thumbs.db
 
 # Optional: ignore build-info if not needed
 artifacts/build-info/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

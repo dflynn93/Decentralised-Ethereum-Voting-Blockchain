@@ -4,7 +4,7 @@ import eventMonitor from '../utils/LegacyEventMonitor';
 import config from './config.js'; // Import centralised config
 
 // Now using configuration instead of hardcoded values
-const contractAddress = "0xd254b557670c3d7a37ac1c26d863187e71442f94"; // Updated with new contract address - 1/8/25
+const contractAddress = "0xe9249d97aefe2f7c819685db584de4e966b6061a"; // Updated with new contract address - 21/8/25
 const contractABI = abi;
 
 // AWS Backend URL - For Deployment
@@ -80,11 +80,11 @@ export const getSystemStatus = () => {
 export const addCandidate = async (name, party) => {
     try {
         // Validate environment before proceeding
-        const getSystemStatus = getSystemStatus();
+        /* const getSystemStatus = getSystemStatus();
         if (!getSystemStatus.validation.isValid) {
             console.warn("System validation issues:", getSystemStatus.validation.errors);
         }
-
+        */
         const contract = await getContract();
         const tx = await contract.addCandidate(name, party);
         
@@ -186,7 +186,7 @@ export const startVoteCounting = async () => {
         countingState.phase = 'STARTED';
         
         // Enhanced logging
-        if (config.geatures.enabledAuditLogging) {
+        if (config.features.enabledAuditLogging) {
             console.log("Vote counting started - Audit trailed enabled");
         }
 
@@ -283,13 +283,29 @@ export const isCurrentUserAdmin = async () => {
     try {
         const signer = await getSigner();
         const userAddress = await signer.getAddress();
-        const adminAddress = await getAdmin();
+        // const adminAddress = await getAdmin();
 
         const knownAdminWallets = [
             '0x1Da5916E8443b0f028d2bdA63b8639eF609e9bDe'
         ];
 
-        return userAddress.toLowerCase() === adminAddress.toLowerCase();
+        // Check against known admin wallets first (for testing)
+        const isKnownAdmin = knownAdminWallets.some(
+            admin => admin.toLowerCase() == userAddress.toLowerCase()
+        );
+
+        if (isKnownAdmin) {
+            return true;
+        }
+
+        // Check contract admin
+        try {
+                const adminAddress = await getAdmin();
+                return userAddress.toLowerCase() == adminAddress.toLowerCase();
+        } catch (contractError) {
+            console.warn("Contract admin check failed, using known admin list:", contractError);
+            return false;
+        }
     } catch (error) {
         console.error("Error checking admin status:", error);
         return false;
@@ -363,6 +379,8 @@ export const publishResults = async () => {
             const tx = await contract.publishResults();
             const receipt = await tx.wait();
             console.log("Publish results transaction confirmed:", receipt);
+
+            const filename = downloadResults(await getCandidates(), null);
             
             countingState.phase = 'COMPLETED';
             countingState.publishedResults = {
@@ -381,6 +399,8 @@ export const publishResults = async () => {
             };
         } catch (blockchainError) {
             console.log("Blockchain publishing failed, simulating for testing:", blockchainError);
+
+            const filename = downloadResults(await getCandidates(), null);
             
             countingState.phase = 'COMPLETED';
             countingState.publishedResults = {
@@ -712,6 +732,18 @@ export const commitVote = async (candidateIdsInRankOrder) => {
     }
 };
 
+export const hasUserSubmittedRanking = async (address) => {
+    try {
+        const contract = await getContractReadOnly();
+        // Check if they have a ranking for position 1
+        const firstChoice = await contract.getCandidateIdByRank(address, 1);
+        return firstChoice !== undefined && firstChoice !== 0;
+    } catch (error) {
+        console.error("Error checking submitted ranking:", error);
+        return false;
+    }
+};
+
 export const revealVote = async () => {
     try {
         const contract = await getContract();
@@ -881,14 +913,16 @@ export const submitRanking = async (candidateIdsInRankOrder) => {
             ranks: ranks
         });
 
+        // Check gas estimate first
+        try {
+            const gasEstimate = await contract.submitRanking.estimateGas(candidateIdsInRankOrder, ranks);
+            console.log("Estimated gas:", gasEstimate.toString());
+        } catch (gasError) {
+            console.warn("Gas estimation failed:", gasError);
+        }
+
         const tx = await contract.submitRanking(candidateIdsInRankOrder, ranks);
-        await tx.wait();
-        
-        const signer = await getSigner();
-        const voterAddress = await signer.getAddress();
-        setTimeout(() => {
-            eventMonitor.simulateVoteAction('VOTE_SUBMITTED', voterAddress, `Vote submitted with ${candidateIdsInRankOrder.length} rankings`);
-        }, 1000);
+        console.log("Transaction submitted:", tx.hash);
         
         return tx;
     } catch (error) {
@@ -1005,6 +1039,33 @@ export const processVoteCounting = async () => {
         console.error("Error processing vote counting:", error);
         throw error;
     }
+};
+
+const downloadResults = (candidates, prstResults) => {
+    const totalVotes = candidates.reduce((sum, c) => sum + (c.votes || 0), 0);
+
+    // Create CSV content
+    let csv = 'BallyBeg Election Results\n';
+    csv += `Generated: ${new Date().toLocaleString()}\n\n`;
+    csv += `Position,Candidate,Party,Votes,Percentage\n`;
+
+    candidates
+        .sort((a, b) => (b.votes || 0) - (a.votes || 0))
+        .forEach((c, i) => {
+            const percentage = totalVotes > 0 ? ((c.votes || 0)/ totalVotes* 100).toFixed(1) : '0';
+            csv += `${i + 1},"${c.name},${c.party || 'Independent'}",${c.votes || 0},${percentage}%\n`;
+        });
+
+    // Download file
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `election_results_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    return a.download;
 };
 
 export {

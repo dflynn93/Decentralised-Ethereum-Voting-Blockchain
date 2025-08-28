@@ -1,32 +1,38 @@
 {
-    "name": "eirvote",
-    "version": "1.0.0",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview",
-        "start": "vite",
-        "server": "cd backend && node server.js",
-        "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-        "hardhat:compile": "hardhat compile",
-        "hardhat:test": "hardhat test",
-        "hardhat:node": "hardhat node"
-    },
-    "type": "module",
-    "dependencies": {
-        "circomlibjs": "^0.1.7",
-        "concurrently": "^8.2.2",
-        "cors": "^2.8.5",
-        "ether": "^0.0.9",
-        "ethers": "^6.15.0",
-        "express": "^5.1.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
-    },
-    "devDependencies": {
-        "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-        "@vitejs/plugin-react": "^4.5.1",
-        "hardhat": "^2.24.3",
-        "vite": "^6.3.5"
-    }
+  "name": "eirvote",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite",
+    "server": "cd backend && node server.js",
+    "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
+    "hardhat:compile": "hardhat compile",
+    "hardhat:test": "hardhat test",
+    "hardhat:node": "hardhat node",
+    "test": "jest"
+  },
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.868.0",
+    "@aws-sdk/lib-dynamodb": "^3.868.0",
+    "circomlibjs": "^0.1.7",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "ether": "^0.0.9",
+    "ethers": "^6.15.0",
+    "express": "^5.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.3.0",
+    "@vitejs/plugin-react": "^4.5.1",
+    "hardhat": "^2.24.3",
+    "jest": "^30.0.5",
+    "vite": "^6.3.5"
+  }
 }

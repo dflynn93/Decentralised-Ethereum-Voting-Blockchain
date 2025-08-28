@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getContract, getCandidates, hasUserVoted, submitRanking, isCurrentUserAdmin } from "./VotingContract.js";
+import { getContract, getCandidates, hasUserSubmittedRanking, submitRanking, isCurrentUserAdmin } from "./VotingContract.js";
 import { ethers } from "ethers";
 
 import AdminPanel from "../components/AdminPanel.jsx";
@@ -106,7 +106,7 @@ function App() {
 
     const initialiseWallet = async () => {
         if (!window.ethereum) {
-            alert("MetaMask not detected. Please install it to use this app.");
+            setConnectionStatus("MetaMask not detected. Please install it to use this app.");
             return;
         }
 
@@ -127,7 +127,7 @@ function App() {
             setContract(VotingContract);
 
             setConnectionStatus("Checking vote status...");
-            const voted = await hasUserVoted(address);
+            const voted = await hasUserSubmittedRanking(address)
             setHasVoted(voted);
 
             setConnectionStatus("Loading candidates...");
@@ -154,24 +154,55 @@ function App() {
         }
     };
        
-    const handleSubmitRanking = async (rankedCandidateIds) => {
-        try {
-            setConnectionStatus("Submitting your vote to blockchain...");
-            await submitRanking(rankedCandidateIds);
-
-            setConnectionStatus("Vote submitted! Refreshing data...");
-            const updated = await getCandidates();
-            setCandidates(updated);
+   const handleSubmitRanking = async (rankedCandidateIds) => {
+    try {
+        setConnectionStatus("Submitting your vote to blockchain...");
+        
+        // Submit the vote
+        const tx = await submitRanking(rankedCandidateIds);
+        console.log("Transaction hash:", tx.hash);
+        
+        setConnectionStatus("Waiting for blockchain confirmation...");
+        
+        // Wait for confirmation
+        const receipt = await tx.wait();
+        console.log("Transaction confirmed in block:", receipt.blockNumber);
+        
+        setConnectionStatus("Vote confirmed! Refreshing data...");
+        
+        // Verify the vote was recorded
+        const voted = await hasUserSubmittedRanking(address)
+        console.log("Vote status after submission:", voted);
+        
+        if (voted) {
             setHasVoted(true);
-
-            setConnectionStatus("Vote successfully recorded!");
-            setTimeout(() =>setConnectionStatus(""), 3000);
-        } catch (err) {
-            console.error("Failed to submit ranking:", err);
-            setConnectionStatus("Vote failed: " + err.message);
-            setTimeout(() => setConnectionStatus(""), 5000);
+            setConnectionStatus("Vote successfully recorded on blockchain");
+        } else {
+            setConnectionStatus("Warning: Vote submitted but status not updated. Check blockchain explorer.");
         }
-    };
+        
+        // Refresh candidates
+        const updated = await getCandidates();
+        setCandidates(updated);
+        
+        setTimeout(() => setConnectionStatus(""), 5000);
+        
+    } catch (err) {
+        console.error("Vote submission failed:", err);
+        
+        if (err.code === 4001) {
+            setConnectionStatus("Vote cancelled by user.");
+        } else if (err.message.includes("already voted")) {
+            setConnectionStatus("You have already voted in this election.");
+        } else if (err.message.includes("not allowed")) {
+            setConnectionStatus("Voting not currently allowed. Check election phase.");
+        } else {
+            setConnectionStatus("Vote failed: " + err.message);
+        }
+        
+        setTimeout(() => setConnectionStatus(""), 5000);
+    }
+};
 
     const onToggleVoting = () => {
         const newState = !votingClosed;
@@ -180,6 +211,8 @@ function App() {
 
         setVotingClosed(newState);
         localStorage.setItem("votingClosed", newState.toString());
+
+        console.log("Voting state changed to:", newState, "votingClosed variable:", votingClosed);
 
         const newHistory = [...votingHistory, {
             timestamp,
@@ -257,7 +290,7 @@ function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                                    Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                                    Connected: {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
                                 </div>
                                 {isAdmin && (
                                     <div style={{ fontSize: '0.8rem', color: '#dc3545', fontWeight: 'bold' }}>

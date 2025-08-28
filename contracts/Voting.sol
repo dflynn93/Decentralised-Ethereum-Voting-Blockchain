@@ -556,7 +556,7 @@ contract Voting {
 
     // Legacy compatibility
     function hasVoted(address voter) public view returns (bool) {
-        return hasRevealed[voter]; // Only count as "voted" after revealing
+        return hasRevealed[voter] || userRankings[voter][1] != 0;
     }
     
     // Additional view functions for counting process

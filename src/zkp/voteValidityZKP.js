@@ -1,5 +1,4 @@
-// Simple ZKP Implementation without circomlibjs
-// File: src/zkp/voteValidityZKP.js
+// ZKP Implementation without circomlibjs
 
 // Simple hash function for browser compatibility
 function simpleHash(input) {

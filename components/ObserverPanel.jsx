@@ -40,7 +40,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
     }, [isLoggedIn, contract, provider, isMonitoring]);
 
     // Audit Functions
-    const runIndependentAudit = async () => {
+    const runAudit = async () => {
         setIsRunningAudit(true);
         
         try {
@@ -544,7 +544,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                 </div>
             )}
             
-            {/* Basic Audit Tab */}
+            {/* Audit Tab */}
             {activeTab === 'audit-node' && (
                 <div className="tab-content">
                     <h3>Basic Audit Check</h3>
@@ -554,7 +554,7 @@ function ObserverPanel({ candidates = [], votingClosed = false, contract, provid
                         <p>Run basic checks on the election data</p>
                         
                         <button
-                            onClick={runIndependentAudit}
+                            onClick={runAudit}
                             disabled={isRunningAudit}
                             style={{
                                 padding: '0.5rem 1rem',

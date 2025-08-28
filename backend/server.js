@@ -1,11 +1,27 @@
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
+import path from 'path';
 import { fileURLToPath } from 'url';
+import { adminData, DB } from './dynamo.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Initialise default data on startup
+async function initialiseData() {
+    try {
+        // Ensure default admin exists
+        await adminData.addAdmin('0x1Da5916E8443b0f028d2bdA63b8639eF609e9bDe');
+        console.log('DynamoDB initialised with default admin');
+    } catch (error) {
+        console.error('DynamoDB initialisation error:', error);
+    }
+}
+
+// Call on server startup
+initialiseData();
 
 // Middleware
 app.use(cors());
@@ -23,12 +39,6 @@ app.use((req, res, next) => {
         next();
     }
 });
-
-
-// Admin wallet addresses (removed extra '0' and properly defined)
-const adminWallets = [
-    '0x1Da5916E8443b0f028d2bdA63b8639eF609e9bDe',  //
-];
 
 // === IAM Integration Functions ===
 
@@ -90,33 +100,34 @@ function logAdminAction(action, walletAddress, details = '') {
 
 
 // POST /api/admin/verify - Password verification
-app.post('/api/admin/verify', (req, res) => {
+app.post('/api/admin/verify', async (req, res) => {
     const { walletAddress, password } = req.body;
     
-    // Validate inputs
-    if (!walletAddress || !password) {
-        return res.status(400).json({ error: 'Wallet address and password required' });
-    }
-
-    // Check if wallet is admin (case-insensitive comparison)
-    if (!adminWallets.includes(walletAddress)) {
-        return res.status(403).json({ error: 'Access denied. Not an admin wallet.' });
-    }
-    
-    // Simple password check
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-    
-    if (password === ADMIN_PASSWORD) {
-        res.json({
-            success: true,
-            message: 'Admin access granted',
-            walletAddress: walletAddress
-        });
-    } else {
-        res.status(401).json({
-            success: false,
-            error: 'Incorrect admin password'
-        });
+    try {
+        // Check if wallet is admin using DynamoDB
+        const isAdmin = await adminData.isAdmin(walletAddress);
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Not an admin wallet.' });
+        }
+        
+        // Check password (you can store this in DynamoDB too if needed)
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+        
+        if (password === ADMIN_PASSWORD) {
+            res.json({
+                success: true,
+                message: 'Admin access granted',
+                walletAddress: walletAddress
+            });
+        } else {
+            res.status(401).json({
+                success: false,
+                error: 'Incorrect admin password'
+            });
+        }
+    } catch (error) {
+        console.error('Admin verification error:', error);
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
@@ -125,7 +136,7 @@ app.post('/api/admin/verify', (req, res) => {
 
 // Simple root route for Load Balancer health checks
 app.get('/', (req, res) => {
-    res.json({ message: 'Eirvote Backend Server', status: 'running', version: '1.0.0', timestamp: new Date().toISOString})
+    res.json({ message: 'Eirvote Backend Server', status: 'running', version: '1.0.0', timestamp: new Date().toISOString()})
 });
 
 // Basic health check
@@ -174,6 +185,9 @@ app.use((error, req, res, next) => {
 });
 
 // Start the server
-startServer();
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server runnnig on http://0.0.0.0:${PORT}`);
+    console.log(`Backend ready for Load Balancer traffic`);
+})
 
 export default app;
