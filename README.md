@@ -4,6 +4,7 @@ Eirvote Blockchain Voting System
 Live Demo: 
 Frontend: https://d3btbzdb8l10rt.cloudfront.net
 Smart Contract: 0xe9249d97aefe2f7c819685db584de4e966b6061a
+Transactions: https://sepolia.etherscan.io/address/0xe9249d97aefe2f7c819685db584de4e966b6061a
 
 Architecture:
 React Frontend (CloudFront) ↔ Node.js API (EC2 + ALB) ↔ Ethereum Smart Contract
