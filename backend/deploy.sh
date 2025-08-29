@@ -24,7 +24,7 @@ cd /opt/eirvote-backend
 # Install dependencies
 npm install
 
-# Set proper permissions
+# Set permissions
 chmod 755 temp
 
 # Start application with PM2

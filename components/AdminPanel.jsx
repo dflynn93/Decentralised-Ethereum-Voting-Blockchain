@@ -154,7 +154,7 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
         return () => clearInterval(timer);
     }, [nominationDeadline, votingPhase]);
 
-    // Proper error handling in counting step
+    // Error handling in counting step
     const handleCountingStep = async (stepFunction, stepName, confirmMessage) => {
         if (!window.confirm(confirmMessage)) return;
 
@@ -177,7 +177,7 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
         } catch (error) {
             console.error(`${stepName} failed:`, error);
             
-            // Proper error handling with simulation fallback
+            // Error handling with simulation fallback
             try {
                 alert(`${stepName} had issues but we'll continue anyway.\n\nFor testing purposes, this will simulate the step working.\n\nOriginal error: ${error.message}`);
             } catch (alertError) {
@@ -195,7 +195,7 @@ function AdminPanel({ candidates = [], votingClosed = false, onToggleVoting = ()
         }
     };
 
-    // Enhanced count votes function with PRSTV simulation and voter counts
+    // Count votes function with PRSTV simulation and voter counts
     const handleCountVotesWithPRSTV = async () => {
         if (!window.confirm('Step 3: Count Votes?\n\nThis will:\n- Count all decrypted votes\n- Combine with simulated votes for testing\n- Compile election results\n- Generate PR-STV simulation\n\nProceed?')) {
             return;

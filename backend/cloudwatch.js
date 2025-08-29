@@ -1,4 +1,3 @@
-// cloudwatch.js - Minimal CloudWatch integration for Eirvote
 class SimpleCloudWatch {
     constructor() {
         this.enabled = !!(process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION);

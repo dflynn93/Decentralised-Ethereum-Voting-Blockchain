@@ -24,7 +24,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                 marginBottom: '2rem'
             }}>
                 <h2 style={{ margin: '0 0 1rem 0', color: '#2e7d32' }}>
-                    🇮🇪 PR-STV Irish Election Results - BallyBeg, Co. Donegal
+                    PR-STV Irish Election Results - BallyBeg, Co. Donegal
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                     <div>
@@ -150,7 +150,7 @@ const PRSTVResultsDisplay = ({ prstResults, ballots, onRunNewSimulation }) => {
                             </p>
                         </div>
 
-                        {/* Fixed Table with Proper Alignment */}
+                        {/* Fixed Table with Alignment */}
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{
                                 width: '100%',

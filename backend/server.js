@@ -55,7 +55,7 @@ function checkIAMCapabilties() {
     };
 }
 
-// Enhanced logging with CloudWatch Integration (when IAM role is available)
+// Logging with CloudWatch Integration (when IAM role is available)
 function logAdminAction(action, walletAddress, details = '') {
     const timestamp = new Date().toISOString();
     const logEntry = {

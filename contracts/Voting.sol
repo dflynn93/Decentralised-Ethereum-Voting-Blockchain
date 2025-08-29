@@ -53,7 +53,7 @@ contract Voting {
     RevealedVote[] public revealedVotes;
     mapping(address => uint) public voterToRevealIndex; // Maps voter to their reveal index
 
-    // Enhanced Events for Complete Audit Trail
+    // Events for Complete Audit Trail
     event VoteCommitted(address indexed voter, bytes32 nullifier);
     event VoteRevealed(address indexed voter);
     event PhaseChanged(VotingPhase newPhase);

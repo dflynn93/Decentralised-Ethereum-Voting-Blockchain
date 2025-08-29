@@ -75,7 +75,7 @@ export const getSystemStatus = () => {
     };
 };
 
-// === ENHANCED ADMIN FUNCTIONS WITH AUDIT LOGGING ===
+// === ADMIN FUNCTIONS WITH AUDIT LOGGING ===
 
 export const addCandidate = async (name, party) => {
     try {
@@ -95,7 +95,7 @@ export const addCandidate = async (name, party) => {
         const receipt = await tx.wait();
         console.log("Candidate added successfully. Block:", receipt.blockNumber);
 
-        // Enhanced logging for production
+        // Logging for production
         if (config.features.enabledAuditLogging) {
             const auditEntry = {
                 action: 'CANDIDATE_ADDED',
@@ -185,7 +185,7 @@ export const startVoteCounting = async () => {
         
         countingState.phase = 'STARTED';
         
-        // Enhanced logging
+        // Llogging
         if (config.features.enabledAuditLogging) {
             console.log("Vote counting started - Audit trailed enabled");
         }
@@ -543,7 +543,7 @@ export const generateVoteMerkleTree = (votes) => {
     };
 };
 
-// Enhanced error handling for blockchain calls
+// Error handling for blockchain calls
 const handleBlockchainError = (error, operation) => {
     console.error(`Blockchain error in ${operation}:`, error);
     
@@ -558,7 +558,7 @@ const handleBlockchainError = (error, operation) => {
     }
 };
 
-// Wrapper for all blockchain calls with enhanced error handling
+// Wrapper for all blockchain calls with error handling
 const safeBlockchainCall = async (operation, blockchainFunction) => {
     try {
         return await blockchainFunction();
