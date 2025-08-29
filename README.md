@@ -9,7 +9,6 @@ Architecture:
 React Frontend (CloudFront) ↔ Node.js API (EC2 + ALB) ↔ Ethereum Smart Contract
 
 Technology Stack:
-
 Frontend: React 18 with Ethers.js for blockchain interaction and MetaMask integration
 Backend: Node.js Express server with DynamoDB storage
 Blockchain: Solidify smart contracts deployed on Ethereum Sepolia testnet.
@@ -28,6 +27,8 @@ Observers: Monitor real-time blockchain events and audit trails
 
 Key Features:
 The system has a multi-role architecture with interfaces for voters, administrators, and observers. Blockchain integration allows for immutable vote recording through Ethereum smart contracts with event monitoring. 
+
+
 Frontend deployment: 
 npm run build 
 aws s3 sync dist/ s3://eirvote-29763 --delete 
